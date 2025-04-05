@@ -1,4 +1,4 @@
-local techdufus = require_on_exported_call('techdufus.telescope.pickers')
+local brimdor = require_on_exported_call('brimdor.telescope.pickers')
 
 return {
   "nvim-telescope/telescope.nvim",
@@ -23,7 +23,7 @@ return {
     },
     { "<leader>sh", require('telescope.builtin').help_tags,   { desc = '[S]earch [H]elp', silent = true, noremap = true } },
     { "<leader>ss", require('telescope.builtin').builtin,     { desc = '[S]earch [S]elect Telescope', silent = true, noremap = true } },
-    { "<leader>fs", techdufus.project_files,                  { desc = '[F]ile [S]earch', silent = true, noremap = true } },
+    { "<leader>fs", brimdor.project_files,                  { desc = '[F]ile [S]earch', silent = true, noremap = true } },
     { "<leader>b",  require('telescope.builtin').buffers,     { desc = '[B]uffers', silent = true, noremap = true } },
     { "<leader>gs", require('telescope.builtin').live_grep,   { desc = '[G]rep [S]earch', silent = true, noremap = true } },
     { "<leader>fr", require('telescope.builtin').oldfiles,    { desc = '[F]iles [R]ecent', silent = true, noremap = true } },

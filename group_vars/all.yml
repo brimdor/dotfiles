@@ -1,75 +1,75 @@
 default_roles:
   - system
-  # - 1password
-  - aldente
-  - asciiquarium
+  - 1password
+  # - aldente
+  # - asciiquarium
   - bash
   - bat
   - btop
-  - discord
-  - docker
-  - flatpak
+  # - discord
+  # - docker
+  # - flatpak
   - fonts
-  - fzf
+  # - fzf
   - gh
   - git
-  - go
-  - hammerspoon
+  # - go
+  # - hammerspoon
   - helm
   - k8s
-  - k9s
-  - kitty
-  - lazygit
-  - lsd
-  - lua
-  - nala
-  - ncdu
-  - neofetch
+  # - k9s
+  # - kitty
+  # - lazygit
+  # - lsd
+  # - lua
+  # - nala
+  # - ncdu
+  # - neofetch
   - neovim
-  - nerdfetch
+  # - nerdfetch
   - npm
   - nvm
   - obsidian
   - podman
-  - pwsh
+  # - pwsh
   - python
-  - raycast
+  # - raycast
   # - ruby
   # - rust
-  - spotify
+  # - spotify
   - ssh
   - sshfs
-  - starship
-  - taskfile
+  # - starship
+  # - taskfile
   - terraform
-  - terragrunt
-  - tldr
-  - tmate
+  # - terragrunt
+  # - tldr
+  # - tmate
   - tmux
   # - tshark
-  - warp
+  # - warp
   # - zellij
-  - zoxide
+  # - zoxide
   - zsh
 
-git_user_name: "TechDufus"
+git_user_name: "Brimdor"
 op:
   git:
     user:
-      email: "op://Personal/TechDufus GitHub/email"
-    allowed_signers: "op://Personal/TechDufus SSH/allowed_signers"
+      email: "op://Personal/Brimdor GitHub/email"
+    allowed_signers: "op://Personal/Brimdor SSH/allowed_signers"
   ssh:
     github:
-      techdufus:
+      brimdor:
         - name: id_ed25519
-          vault_path: "op://Personal/TechDufus SSH"
+          vault_path: "op://Personal/Brimdor SSH"
         - name: raft-infra
           vault_path: "op://Raft/Raft-SSH"
 # FIXME: See `system/tasks/main.yml` for how to structure this var looping.
-  # system:
-  #   hosts:
-  #     - item: op://Raft/rdp-demo-local-ingress/notesPlain
-  #       account: my.1password.com
+# system:
+#   hosts:
+#     - item: op://Raft/rdp-demo-local-ingress/notesPlain
+#       account: my.1password.com
 
 k8s:
   repo:

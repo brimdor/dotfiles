@@ -3,4 +3,4 @@ ConfigMode = "rich" -- changes the config to suit either a full nerdfont/truecol
 vim.g.loaded = 1
 vim.g.loaded_netrwPlugin = 1
 
-require('techdufus.core')
+require('brimdor.core')

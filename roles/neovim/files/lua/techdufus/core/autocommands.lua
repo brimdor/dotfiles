@@ -106,7 +106,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 })
 
 vim.api.nvim_create_autocmd('LspAttach', {
-  group = vim.api.nvim_create_augroup('techdufus-lsp-attach', { clear = true }),
+  group = vim.api.nvim_create_augroup('brimdor-lsp-attach', { clear = true }),
   callback = function(event)
     -- In this case, we create a function that lets us more easily define mappings specific
     -- for LSP related items. It sets the mode, buffer and description for us each time.

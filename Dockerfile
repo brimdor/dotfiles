@@ -1,9 +1,9 @@
 FROM ubuntu:22.04
 
-LABEL maintainer="TechDufus <https://techdufus.com>"
+LABEL maintainer="Brimdor <https://homelab.eaglepass.io>"
 
-ARG USER=techdufus
-ARG group=techdufus
+ARG USER=brimdor
+ARG group=brimdor
 ARG uid=1000
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -46,8 +46,8 @@ RUN \
   touch /home/${USER}/.ansible-vault/vault.secret && \
   echo '$vault_secret' > /home/${USER}/.ansible-vault/vault.secret
 
-# RUN bash -c "$(curl -fsSL https://raw.githubusercontent.com/TechDufus/dotfiles/main/bin/dotfiles)"
-RUN git clone --quiet https://github.com/TechDufus/dotfiles.git /home/${USER}/.dotfiles
+# RUN bash -c "$(curl -fsSL https://raw.githubusercontent.com/Brimdor/dotfiles/main/bin/dotfiles)"
+RUN git clone --quiet https://github.com/Brimdor/dotfiles.git /home/${USER}/.dotfiles
 COPY --chown=${USER}:${group} ansible.cfg /home/${USER}/.dotfiles/ansible.cfg
 RUN bash -c "/home/${USER}/dotfiles"
 

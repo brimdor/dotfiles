@@ -178,6 +178,6 @@ if [[ -z "$TMUX" ]]; then
     fi
   done
 fi
-#toilet "TechDufus" -F border:gay -f emboss2
+#toilet "Brimdor" -F border:gay -f emboss2
 
 eval "$(starship init bash)"

@@ -125,12 +125,12 @@ return {
 
       -- cmp icons
       local cmp = require('cmp')
-      local icons = require('techdufus.core.icons')
+      local icons = require('brimdor.core.icons')
       -- local lspkind = require('lspkind')
       local luasnip = require('luasnip')
       local cmp_mapping = require('cmp.config.mapping')
       local cmp_types = require('cmp.types.cmp')
-      local utils = require('techdufus.core.utils')
+      local utils = require('brimdor.core.utils')
 
       require('luasnip.loaders.from_vscode').lazy_load()
 

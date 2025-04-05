@@ -59,7 +59,7 @@ function k8s_info() {
 # function rancher_info() {
 #     # if the rancher command exists, use it to get the current context
 #     # which will run 'rancher context current' and parse the data from this example output:
-#     # Cluster:sandbox Project:dufus-test to look like [sandbox@dufus-test]
+#     # Cluster:sandbox Project:brimdor-test to look like [sandbox@brimdor-test]
 #     if [[ -x "$(command -v rancher)" ]]; then
 #         local rancher_data="$(rancher context current 2> /dev/null | sed -E 's/Cluster:(\w+) Project:(\w+)/\1@\2/')"
 #         if [[ "$rancher_data" != "" ]]; then
