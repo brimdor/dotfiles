@@ -7,7 +7,7 @@ opLogin () {
   local acct=$(op account list --format=json | jq -r '.[0].shorthand')
 
   # Option A: classic – let 1Password emit the export line
-  eval "$(op signin --account "$acct")"
+  # eval "$(op signin --account "$acct")"
 
   # Option B: raw token – do the export yourself
   # export OP_SESSION_${acct}="$(op signin --account "$acct" --raw)"

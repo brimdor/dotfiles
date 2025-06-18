@@ -33,7 +33,7 @@ op_session_manager() {
     fi
 
     # Proceed to sign in if session is missing or invalid
-    echo "🔑 Signing in to 1Password account $account_alias..."
+    # echo "🔑 Signing in to 1Password account $account_alias..."
     session_token=$(op signin --account "$account_alias" --raw)
 
     if [[ -z "$session_token" ]]; then
