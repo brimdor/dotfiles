@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+echo "[chezmoi] osid is: {{ .osid }}"
+echo "-----"
+chezmoi data
+
 # Pre-flight check function for Ansible - Exit if Ansible is already installed in $HOME/.local/bin
 check_ansible_installed() {
     if [[ -x "$HOME/.local/bin/ansible" ]]; then
