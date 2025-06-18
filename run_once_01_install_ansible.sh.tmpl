@@ -38,8 +38,8 @@ install_ansible() {
     {{ else if eq .osid "linux-arch" }}
     sudo pacman -S --noconfirm --needed python python-pip
     {{ else if or (eq .osid "linux-debian") (eq .osid "linux-ubuntu") }}
-    sudo apt-get update -qq > /dev/null
-    sudo apt-get install python3 python3-pip -y -qq > /dev/null
+    sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq > /dev/null
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install python3 python3-pip -y -qq > /dev/null
     {{ else if eq .osid "linux-fedora" }}
     sudo dnf install -y python3 python3-pip
     {{ end }}
