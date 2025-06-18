@@ -58,12 +58,12 @@ install_1password() {
         esac
         curl -LO "https://cache.agilebits.com/dist/1P/op2/pkg/${VERSION}/op_linux_${ARCH_RAW}_${VERSION}.zip"
         unzip -d op "op_linux_${ARCH_RAW}_${VERSION}.zip"
-        sudo mv op/op /usr/local/bin/op
+        sudo mv op/op $HOME/.local/bin/op
         rm -rf op* || true
 
         sudo groupadd -f onepassword-cli
-        sudo chgrp onepassword-cli /usr/local/bin/op
-        sudo chmod g+s /usr/local/bin/op
+        sudo chgrp onepassword-cli $HOME/.local/bin/op
+        sudo chmod g+s $HOME/.local/bin/op
         echo "[chezmoi] 1Password CLI manual installation completed."
     fi
 }
