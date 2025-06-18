@@ -21,8 +21,8 @@ install_1password() {
         # Debian/Ubuntu using apt-get
         export DEBIAN_FRONTEND=noninteractive
         export DEBCONF_NOWARNINGS=yes
-        sudo apt-get update -qq > /dev/null || true
-        sudo apt-get install -y -qq apt-transport-https ca-certificates curl gnupg > /dev/null || true
+        sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq > /dev/null || true
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq apt-transport-https ca-certificates curl gnupg > /dev/null || true
         ARCH=$(dpkg --print-architecture)
         echo "[chezmoi] Installing 1Password CLI for Debian/Ubuntu..."
         curl -sS https://downloads.1password.com/linux/keys/1password.asc | sudo gpg --dearmor --output /usr/share/keyrings/1password-archive-keyring.gpg
@@ -31,8 +31,8 @@ install_1password() {
         curl -sS https://downloads.1password.com/linux/debian/debsig/1password.pol | sudo tee /etc/debsig/policies/AC2D62742012EA22/1password.pol >/dev/null
         sudo mkdir -p /usr/share/debsig/keyrings/AC2D62742012EA22
         curl -sS https://downloads.1password.com/linux/keys/1password.asc | sudo gpg --dearmour --output /usr/share/debsig/keyrings/AC2D62742012EA22/debsig.gpg
-        sudo apt-get update -qq
-        sudo apt-get install -y 1password-cli -qq >/dev/null|| true
+        sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y 1password-cli -qq >/dev/null|| true
     elif command -v dnf &>/dev/null; then
         # Fedora using dnf
         echo "[chezmoi] Installing 1Password CLI for Fedora..."
