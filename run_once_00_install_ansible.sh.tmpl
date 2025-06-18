@@ -2,19 +2,19 @@
 
 set -euo pipefail
 
-# Pre-flight check function for Ansible - Exit if Ansible is already installed
+# Pre-flight check function for Ansible - Exit if Ansible is already installed in $HOME/.local/bin
 check_ansible_installed() {
-    if command -v ansible &>/dev/null; then
-        echo "[chezmoi] Ansible is already installed."
+    if [[ -x "$HOME/.local/bin/ansible" ]]; then
+        echo "[chezmoi] Ansible is already installed in \$HOME/.local/bin."
         exit 0
     fi
 }
 
 # Function to check if Ansible exists post-installation and its version - Exit with error if not found
 check_ansible_version() {
-    if command -v ansible &>/dev/null; then
-        echo "[chezmoi] Ansible is installed successfully."
-        ANSIBLE_VERSION=$(ansible --version | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+    if [[ -x "$HOME/.local/bin/ansible" ]]; then
+        echo "[chezmoi] Ansible is installed successfully in \$HOME/.local/bin."
+        ANSIBLE_VERSION=$("$HOME/.local/bin/ansible" --version | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
         echo "[chezmoi] Ansible version: $ANSIBLE_VERSION"
     else
         echo "[chezmoi] Ansible did not install properly! Please check the installation logs."
@@ -22,60 +22,44 @@ check_ansible_version() {
     fi
 }
 
-# Function to install Ansible based on the OS
+# Function to install Ansible in $HOME/.local/bin using pipx or pip
 install_ansible() {
+    echo "[chezmoi] Installing Ansible in \$HOME/.local/bin using pip..."
+    # Ensure python3 and pip are installed
     {{ if eq .osid "darwin" }}
-    echo "[chezmoi] Installing Ansible on macOS..."
-    # macOS-specific code
-    if ! command -v brew &>/dev/null; then
-        echo "[chezmoi] Homebrew is not installed. Please install Homebrew first and re-run this Chezmoi setup."
-        exit 1
+    if ! command -v python3 &>/dev/null; then
+        echo "[chezmoi] Installing python3 via Homebrew..."
+        brew install python
     fi
-    brew update
-    brew install ansible || true
-    check_ansible_version
-
+    if ! command -v pip3 &>/dev/null; then
+        echo "[chezmoi] Installing pip3 via Homebrew..."
+        brew install pipx
+    fi
     {{ else if eq .osid "linux-arch" }}
-    echo "[chezmoi] Installing Ansible on Arch Linux..."
-    # Arch Linux-specific code
-    sudo pacman -S --noconfirm --needed ansible || true
-    check_ansible_version
-
-    {{ else if eq .osid "linux-debian" }}
-    echo "[chezmoi] Installing Ansible on Debian-based systems..."
-    export DEBIAN_FRONTEND=noninteractive
+    sudo pacman -S --noconfirm --needed python python-pip
+    {{ else if or (eq .osid "linux-debian") (eq .osid "linux-ubuntu") }}
     sudo apt-get update -qq > /dev/null
-    sudo apt-get install wget gpg -y -qq > /dev/null
-    # Get debian code name
-    DEBIAN_CODENAME=$(. /etc/os-release && echo $VERSION_CODENAME)
-    wget -qO- "https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=get&search=0x6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367" | sudo gpg --dearmour -o /usr/share/keyrings/ansible-archive-keyring.gpg
-    echo "deb http://deb.debian.org/debian ${DEBIAN_CODENAME}-backports main" | sudo tee /etc/apt/sources.list.d/backports.list > /dev/null
-    sudo apt-get update -qq > /dev/null
-    sudo apt-get install software-properties-common python3 python3-pip -y -qq > /dev/null
-    sudo apt-get install ansible -t ${DEBIAN_CODENAME}-backports -y -qq > /dev/null || true
-    check_ansible_version
-
-    {{ else if eq .osid "linux-ubuntu" }}
-    echo "[chezmoi] Installing Ansible on Ubuntu..."
-    sudo apt-get update -qq > /dev/null
-    sudo apt-get install software-properties-common python3 python3-pip -y -qq > /dev/null
-    sudo add-apt-repository -y -update ppa:ansible/ansible > /dev/null
-    sudo apt install -y ansible -qq > /dev/null || true
-    check_ansible_version
-
+    sudo apt-get install python3 python3-pip -y -qq > /dev/null
     {{ else if eq .osid "linux-fedora" }}
-    echo "[chezmoi] Installing Ansible on Fedora..."
-    # Fedora-specific code
-    sudo dnf install -y ansible || true
-    check_ansible_version
+    sudo dnf install -y python3 python3-pip
     {{ end }}
+
+    # Ensure ~/.local/bin exists and is in PATH
+    mkdir -p "$HOME/.local/bin"
+    export PATH="$HOME/.local/bin:$PATH"
+
+    # Install Ansible using pip into user local
+    python3 -m pip install --upgrade --user pip
+    python3 -m pip install --upgrade --user ansible
+
+    check_ansible_version
 }
 
 echo "[chezmoi] Prewarming sudo..."
 sudo true
-echo "[chezmoi] Checking if Ansible is already installed..."
+echo "[chezmoi] Checking if Ansible is already installed in \$HOME/.local/bin..."
 check_ansible_installed
-echo "[chezmoi] Ansible not found! Proceeding with installation..."
+echo "[chezmoi] Ansible not found in \$HOME/.local/bin! Proceeding with installation..."
 echo "[chezmoi] This may take a while, please be patient..."
 install_ansible
-echo "[chezmoi] Ansible installation completed successfully!"
+echo "[chezmoi] Ansible installation completed successfully in \$HOME/.local/bin!"
