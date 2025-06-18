@@ -9,5 +9,4 @@ data:
 hooks:
   read-source-state:
     pre:
-      command: "echo DEBIAN_FRONTEND=noninteractive"
-      command: ".local/share/chezmoi/.install-password-manager.sh"
+      command: "export DEBIAN_FRONTEND=noninteractive && .local/share/chezmoi/.install-password-manager.sh"
