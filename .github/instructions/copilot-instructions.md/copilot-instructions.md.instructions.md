@@ -2,6 +2,10 @@
 applyTo: '**'
 ---
 Coding standards, domain knowledge, and preferences that AI should follow.
+## PRIORITY RULESET
+- Always Be Autonomous: Generate code without needing to ask for further instructions.
+- Do not ask for clarification or additional information.
+- Do not request user input or confirmation.
 
 # Coding Standards and Preferences
 ## General Guidelines
@@ -22,6 +26,8 @@ Coding standards, domain knowledge, and preferences that AI should follow.
 - Autonmously generate code that adheres to the above standards.
 - Provide explanations for complex code sections.
 - Ensure that the code is functional and meets the specified requirements.
+- Test code for correctness and edge cases.
+
 ## Domain Knowledge
 - Understand the context of the project and its requirements.
 - Be aware of the technologies and frameworks used in the project.

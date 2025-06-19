@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+# Enable debug output for visibility
+export PS4='[${BASH_SOURCE}:${LINENO}] '
+set -x
+
 INSTALL_DIR="$HOME/.local/bin"
 UNZIP_BIN="$INSTALL_DIR/unzip"
 
@@ -10,16 +14,20 @@ if command -v unzip &>/dev/null; then
     exit 0
 fi
 
+echo "[chezmoi] Creating install directory: $INSTALL_DIR"
 mkdir -p "$INSTALL_DIR"
 
 # Get the latest busybox version from GitHub releases (e.g., 1_36_1)
-BUSYBOX_VERSION=$(curl -s https://api.github.com/repos/landley/busybox/releases/latest | grep 'tag_name' | sed -E 's/.*"([^"]+)".*/\1/')
+echo "[chezmoi] Fetching latest busybox version from GitHub..."
+BUSYBOX_VERSION=$(curl -s https://api.github.com/repos/landley/busybox/releases/latest | grep 'tag_name' | sed -E 's/.*\"([^\"]+)\".*/\1/')
+echo "[chezmoi] Latest busybox version: $BUSYBOX_VERSION"
 if [[ -z "$BUSYBOX_VERSION" ]]; then
     echo "[chezmoi] Could not determine latest busybox version from GitHub." >&2
     exit 1
 fi
 
 ARCH_RAW="$(uname -m)"
+echo "[chezmoi] Detected architecture: $ARCH_RAW"
 case "$ARCH_RAW" in
     x86_64)
         BUSYBOX_URL="https://github.com/landley/busybox/releases/download/${BUSYBOX_VERSION}/busybox-x86_64"
@@ -40,6 +48,7 @@ echo "[chezmoi] Download URL: $BUSYBOX_URL"
 curl -fL -o "$BUSYBOX_BIN" "$BUSYBOX_URL" || { echo "[chezmoi] Download failed!"; exit 1; }
 
 # Check if the file is a valid ELF binary
+echo "[chezmoi] Verifying downloaded file is a valid ELF binary..."
 if ! file "$BUSYBOX_BIN" | grep -q 'ELF'; then
     echo "[chezmoi] Downloaded file is not a valid binary:"
     head "$BUSYBOX_BIN"
