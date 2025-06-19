@@ -6,6 +6,8 @@ check_1password_installed() {
     if command -v op &>/dev/null; then
         echo "[chezmoi] 1Password CLI is already installed."
         exit 0
+    else
+        echo "[chezmoi] 1Password CLI is not installed. Proceeding with installation."
     fi
 }
 
@@ -74,7 +76,9 @@ install_1password_macos() {
 echo "[chezmoi] Checking if 1Password CLI is already installed..."
 check_1password_installed
 
+echo "[chezmoi] Checking OS Version"
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+echo "[chezmoi] Detected OS: $OS"
 
 if [[ "$OS" == "linux" ]]; then
     install_1password_linux
