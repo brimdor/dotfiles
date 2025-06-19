@@ -96,8 +96,8 @@ install_1password_macos() {
         if [[ ! -f op/op ]]; then
             echo "[chezmoi] op binary not found after unzip!"
             ls -l op
-            exit 1
-        }
+          exit 1
+        fi
         mv op/op "$INSTALL_DIR/op"
         rm -rf op "$ZIPFILE"
 
