@@ -18,7 +18,8 @@ get_latest_version() {
     
     # If empty, use a hardcoded fallback version
     if [[ -z "$version" ]]; then
-        echo "[chezmoi] Warning: Could not determine latest version from GitHub API. Using fallback version."
+        # Send warning to stderr instead of stdout
+        echo "[chezmoi] Warning: Could not determine latest version from GitHub API. Using fallback version." >&2
         version="v2.22.0"  # Hardcoded fallback version
     fi
     
