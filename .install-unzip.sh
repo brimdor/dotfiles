@@ -16,9 +16,11 @@ ARCH_RAW="$(uname -m)"
 case "$ARCH_RAW" in
     x86_64)
         ARCH="amd64"
+        BUSYBOX_URL="https://busybox.net/downloads/binaries/1.36.1-defconfig-multiarch-musl/busybox-x86_64"
         ;;
     aarch64 | arm64)
         ARCH="arm64"
+        BUSYBOX_URL="https://busybox.net/downloads/binaries/1.36.1-defconfig-multiarch-musl/busybox-aarch64"
         ;;
     *)
         echo "[chezmoi] Unsupported architecture: $ARCH_RAW"
@@ -26,13 +28,11 @@ case "$ARCH_RAW" in
         ;;
 esac
 
-# Download prebuilt unzip binary (using busybox as a portable alternative)
-UNZIP_URL="https://busybox.net/downloads/binaries/1.36.1-i686-uclibc/busybox"
-UNZIP_TMP="$INSTALL_DIR/busybox-unzip"
+BUSYBOX_BIN="$INSTALL_DIR/busybox-unzip"
 
 echo "[chezmoi] Downloading busybox as unzip to $UNZIP_BIN..."
-curl -L -o "$UNZIP_TMP" "$UNZIP_URL"
-chmod +x "$UNZIP_TMP"
-ln -sf "$UNZIP_TMP" "$UNZIP_BIN"
+curl -L -o "$BUSYBOX_BIN" "$BUSYBOX_URL"
+chmod +x "$BUSYBOX_BIN"
+ln -sf "$BUSYBOX_BIN" "$UNZIP_BIN"
 
 echo "[chezmoi] unzip installed to $UNZIP_BIN (via busybox)."
