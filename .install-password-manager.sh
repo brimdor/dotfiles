@@ -12,13 +12,27 @@ check_1password_installed() {
 }
 
 get_latest_version() {
-    curl -s https://api.github.com/repos/1Password/op/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'
+    # Try to get version from GitHub API
+    local version
+    version=$(curl -s https://api.github.com/repos/1Password/op/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+    
+    # If empty, use a hardcoded fallback version
+    if [[ -z "$version" ]]; then
+        echo "[chezmoi] Warning: Could not determine latest version from GitHub API. Using fallback version."
+        version="v2.22.0"  # Hardcoded fallback version
+    fi
+    
+    echo "$version"
 }
 
 install_1password_linux() {
-    set -x
     VERSION="$(get_latest_version)"
-    echo "[chezmoi] Latest version: $VERSION"
+    if [[ -z "$VERSION" ]]; then
+        echo "[chezmoi] Error: Could not determine 1Password version."
+        exit 1
+    fi
+    
+    echo "[chezmoi] Installing 1Password CLI $VERSION for Linux..."
     ARCH_RAW="$(uname -m)"
     case "$ARCH_RAW" in
         x86_64) ARCH="amd64" ;;
@@ -34,12 +48,14 @@ install_1password_linux() {
     ZIPFILE="op_linux_${ARCH}_${VERSION}.zip"
     URL="https://cache.agilebits.com/dist/1P/op2/pkg/${VERSION}/op_linux_${ARCH}_${VERSION}.zip"
 
-    echo "[chezmoi] Downloading 1Password CLI $VERSION for Linux $ARCH from $URL"
+    echo "[chezmoi] Downloading from $URL"
     curl -L -o "$ZIPFILE" "$URL" || { echo "[chezmoi] Download failed!"; exit 1; }
+    
     if ! command -v unzip &>/dev/null; then
-        echo "[chezmoi] unzip not found! Please install unzip."
-        exit 1
+        echo "[chezmoi] unzip not found! Installing..."
+        sudo apt-get update -qq && sudo apt-get install -y unzip -qq
     fi
+    
     unzip -d op "$ZIPFILE" || { echo "[chezmoi] unzip failed!"; exit 1; }
     if [[ ! -f op/op ]]; then
         echo "[chezmoi] op binary not found after unzip!"
@@ -51,7 +67,6 @@ install_1password_linux() {
 
     chmod 755 "$INSTALL_DIR/op"
     echo "[chezmoi] 1Password CLI $VERSION installed to $INSTALL_DIR."
-    set +x
 }
 
 install_1password_macos() {
