@@ -12,14 +12,13 @@ check_1password_installed() {
 }
 
 get_latest_version() {
-    # Try to get version from GitHub API
+    # Use 1Password's official version check endpoint
     local version
-    version=$(curl -s https://api.github.com/repos/1Password/op/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+    version="v$(curl https://app-updates.agilebits.com/check/1/0/CLI2/en/2.0.0/N -s | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')"
     
-    # If empty, use a hardcoded fallback version
-    if [[ -z "$version" ]]; then
-        # Send warning to stderr instead of stdout
-        echo "[chezmoi] Warning: Could not determine latest version from GitHub API. Using fallback version." >&2
+    # If empty or error, use a hardcoded fallback version
+    if [[ -z "$version" || "$version" == "v" ]]; then
+        echo "[chezmoi] Warning: Could not determine latest version. Using fallback version." >&2
         version="v2.22.0"  # Hardcoded fallback version
     fi
     
@@ -46,18 +45,18 @@ install_1password_linux() {
     INSTALL_DIR="$HOME/.local/bin"
     mkdir -p "$INSTALL_DIR"
 
-    ZIPFILE="op_linux_${ARCH}_${VERSION}.zip"
+    ZIPFILE="op.zip"
     URL="https://cache.agilebits.com/dist/1P/op2/pkg/${VERSION}/op_linux_${ARCH}_${VERSION}.zip"
 
     echo "[chezmoi] Downloading from $URL"
-    curl -L -o "$ZIPFILE" "$URL" || { echo "[chezmoi] Download failed!"; exit 1; }
+    curl -sSfo "$ZIPFILE" "$URL" || { echo "[chezmoi] Download failed!"; exit 1; }
     
     if ! command -v unzip &>/dev/null; then
         echo "[chezmoi] unzip not found! Installing..."
         sudo apt-get update -qq && sudo apt-get install -y unzip -qq
     fi
     
-    unzip -d op "$ZIPFILE" || { echo "[chezmoi] unzip failed!"; exit 1; }
+    unzip -od op "$ZIPFILE" || { echo "[chezmoi] unzip failed!"; exit 1; }
     if [[ ! -f op/op ]]; then
         echo "[chezmoi] op binary not found after unzip!"
         ls -l op
@@ -87,12 +86,18 @@ install_1password_macos() {
         INSTALL_DIR="$HOME/.local/bin"
         mkdir -p "$INSTALL_DIR"
 
-        ZIPFILE="op_darwin_${ARCH}_${VERSION}.zip"
+        ZIPFILE="op.zip"
         URL="https://cache.agilebits.com/dist/1P/op2/pkg/${VERSION}/op_darwin_${ARCH}_${VERSION}.zip"
 
-        echo "[chezmoi] Downloading 1Password CLI $VERSION for macOS $ARCH..."
-        curl -L -o "$ZIPFILE" "$URL"
-        unzip -d op "$ZIPFILE"
+        echo "[chezmoi] Downloading from $URL"
+        curl -sSfo "$ZIPFILE" "$URL" || { echo "[chezmoi] Download failed!"; exit 1; }
+        
+        unzip -od op "$ZIPFILE" || { echo "[chezmoi] unzip failed!"; exit 1; }
+        if [[ ! -f op/op ]]; then
+            echo "[chezmoi] op binary not found after unzip!"
+            ls -l op
+            exit 1
+        }
         mv op/op "$INSTALL_DIR/op"
         rm -rf op "$ZIPFILE"
 
