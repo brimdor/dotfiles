@@ -9,6 +9,8 @@ Coding standards, domain knowledge, and preferences that AI should follow.
 
 # Coding Standards and Preferences
 ## General Guidelines
+- All installs are binary installs and there must be a version check before installing every time to make sure we get the latest version.
+- Use the latest stable version of libraries and frameworks unless specified otherwise.
 - Use clear and descriptive variable and function names.
 - Write code that is easy to read and maintain.
 - Follow the DRY (Don't Repeat Yourself) principle.

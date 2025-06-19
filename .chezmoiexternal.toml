@@ -187,9 +187,13 @@
     stripComponents = 1
     refreshPeriod = "168h"
 
+{{ $nodeArch := .chezmoi.arch }}
+{{ if eq $nodeArch "amd64" }}{{ $nodeArch = "x64" }}{{ end }}
+{{ if eq $nodeArch "arm64" }}{{ $nodeArch = "arm64" }}{{ end }}
+
 [".local/bin/node"]
     type = "archive-file"
-    url  = "https://nodejs.org/dist/{{ template "get-node-latest-lts-version" . }}/node-{{ template "get-node-latest-lts-version" . }}-{{ .chezmoi.os }}-{{ if eq .chezmoi.arch "amd64" }}x64{{ else }}{{ .chezmoi.arch }}{{ end }}.tar.xz"
-    path = "node-{{ template "get-node-latest-lts-version" . }}-{{ .chezmoi.os }}-{{ if eq .chezmoi.arch "amd64" }}x64{{ else }}{{ .chezmoi.arch }}{{ end }}/bin/node"
-    executable    = true
+    url = "https://nodejs.org/dist/v{{ template "get-node-latest-lts-version" }}/node-v{{ template "get-node-latest-lts-version" }}-{{ if eq .chezmoi.os "darwin" }}darwin{{ else }}linux{{ end }}-{{ $nodeArch }}.tar.xz"
+    path = "node-v{{ template "get-node-latest-lts-version" }}-{{ if eq .chezmoi.os "darwin" }}darwin{{ else }}linux{{ end }}-{{ $nodeArch }}/bin/node"
+    executable = true
     refreshPeriod = "168h"
