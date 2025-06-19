@@ -81,8 +81,10 @@ OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 echo "[chezmoi] Detected OS: $OS"
 
 if [[ "$OS" == "linux" ]]; then
+    echo "[chezmoi] Starting Installation for Linux OS"
     install_1password_linux
 elif [[ "$OS" == "darwin" ]]; then
+    echo "[chezmoi] Starting Installation for macOS"
     install_1password_macos
 else
     echo "[chezmoi] Unsupported OS: $OS"
