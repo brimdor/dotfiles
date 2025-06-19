@@ -5,10 +5,3 @@
 
 data:
     osid: {{ $osid | quote }}
-
-hooks:
-  read-source-state:
-    pre:
-      command: |
-        {{ .chezmoi.sourceDir }}/.install-unzip.sh
-        {{ .chezmoi.sourceDir }}/.install-password-manager.sh
