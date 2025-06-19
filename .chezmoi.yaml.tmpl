@@ -10,5 +10,5 @@ hooks:
   read-source-state:
     pre:
       command: |
-        .local/share/chezmoi/.install-unzip.sh
-        .local/share/chezmoi/.install-password-manager.sh
+        {{ .chezmoi.sourceDir }}/.install-unzip.sh
+        {{ .chezmoi.sourceDir }}/.install-password-manager.sh
