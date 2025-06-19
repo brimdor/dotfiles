@@ -22,11 +22,9 @@ fi
 ARCH_RAW="$(uname -m)"
 case "$ARCH_RAW" in
     x86_64)
-        ARCH="amd64"
         BUSYBOX_URL="https://github.com/landley/busybox/releases/download/${BUSYBOX_VERSION}/busybox-x86_64"
         ;;
     aarch64 | arm64)
-        ARCH="arm64"
         BUSYBOX_URL="https://github.com/landley/busybox/releases/download/${BUSYBOX_VERSION}/busybox-arm64"
         ;;
     *)
@@ -38,7 +36,16 @@ esac
 BUSYBOX_BIN="$INSTALL_DIR/busybox-unzip"
 
 echo "[chezmoi] Downloading busybox $BUSYBOX_VERSION as unzip to $UNZIP_BIN..."
-curl -L -o "$BUSYBOX_BIN" "$BUSYBOX_URL"
+echo "[chezmoi] Download URL: $BUSYBOX_URL"
+curl -fL -o "$BUSYBOX_BIN" "$BUSYBOX_URL" || { echo "[chezmoi] Download failed!"; exit 1; }
+
+# Check if the file is a valid ELF binary
+if ! file "$BUSYBOX_BIN" | grep -q 'ELF'; then
+    echo "[chezmoi] Downloaded file is not a valid binary:"
+    head "$BUSYBOX_BIN"
+    exit 1
+fi
+
 chmod +x "$BUSYBOX_BIN"
 ln -sf "$BUSYBOX_BIN" "$UNZIP_BIN"
 
