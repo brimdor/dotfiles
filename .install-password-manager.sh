@@ -91,4 +91,4 @@ else
     exit 1
 fi
 
-echo "[chezmoi] 1Password CLI installation
+echo "[chezmoi] 1Password CLI installation completed successfully."
