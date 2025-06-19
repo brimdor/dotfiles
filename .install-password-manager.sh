@@ -16,7 +16,9 @@ get_latest_version() {
 }
 
 install_1password_linux() {
+    set -x
     VERSION="$(get_latest_version)"
+    echo "[chezmoi] Latest version: $VERSION"
     ARCH_RAW="$(uname -m)"
     case "$ARCH_RAW" in
         x86_64) ARCH="amd64" ;;
@@ -32,14 +34,24 @@ install_1password_linux() {
     ZIPFILE="op_linux_${ARCH}_${VERSION}.zip"
     URL="https://cache.agilebits.com/dist/1P/op2/pkg/${VERSION}/op_linux_${ARCH}_${VERSION}.zip"
 
-    echo "[chezmoi] Downloading 1Password CLI $VERSION for Linux $ARCH..."
-    curl -L -o "$ZIPFILE" "$URL"
-    unzip -d op "$ZIPFILE"
+    echo "[chezmoi] Downloading 1Password CLI $VERSION for Linux $ARCH from $URL"
+    curl -L -o "$ZIPFILE" "$URL" || { echo "[chezmoi] Download failed!"; exit 1; }
+    if ! command -v unzip &>/dev/null; then
+        echo "[chezmoi] unzip not found! Please install unzip."
+        exit 1
+    fi
+    unzip -d op "$ZIPFILE" || { echo "[chezmoi] unzip failed!"; exit 1; }
+    if [[ ! -f op/op ]]; then
+        echo "[chezmoi] op binary not found after unzip!"
+        ls -l op
+        exit 1
+    fi
     mv op/op "$INSTALL_DIR/op"
     rm -rf op "$ZIPFILE"
 
     chmod 755 "$INSTALL_DIR/op"
     echo "[chezmoi] 1Password CLI $VERSION installed to $INSTALL_DIR."
+    set +x
 }
 
 install_1password_macos() {
