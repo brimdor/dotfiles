@@ -29,7 +29,6 @@ get_latest_7zip_asset() {
 
     ASSET_NAME=$(echo "$ASSET_INFO" | sed -E 's/.*"name": "([^"]+)".*/\1/' | awk '{print $1}')
     ASSET_URL=$(echo "$ASSET_INFO" | sed -E 's/.*"browser_download_url": "([^"]+)".*/\1/' | awk '{print $1}')
-    # Extract version from asset name, e.g., 7z2409-linux-x64.tar.xz -> 2409 -> 24.09
     VERSION_RAW=$(echo "$ASSET_NAME" | grep -oP '7z\K[0-9]+' | head -1)
     VERSION="${VERSION_RAW:0:2}.${VERSION_RAW:2:2}"
 
