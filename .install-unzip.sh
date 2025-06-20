@@ -25,37 +25,22 @@ fi
 echo "[chezmoi] Creating install directory: $INSTALL_DIR"
 mkdir -p "$INSTALL_DIR"
 
-# Set BusyBox version and base URL
-BUSYBOX_VERSION="1.36.1-defconfig-multiarch-musl"
-BUSYBOX_BASE_URL="https://busybox.net/downloads/binaries/${BUSYBOX_VERSION}"
-
-ARCH_RAW="$(uname -m)"
-echo "[chezmoi] Detected architecture: $ARCH_RAW"
-case "$ARCH_RAW" in
-    x86_64)
-        BUSYBOX_ARCH="busybox-x86_64"
-        ;;
-    aarch64|arm64)
-        BUSYBOX_ARCH="busybox-aarch64"
-        ;;
-    armv7l)
-        BUSYBOX_ARCH="busybox-armv7l"
-        ;;
-    i386|i686)
-        BUSYBOX_ARCH="busybox-i686"
-        ;;
-    *)
-        echo "[chezmoi] Unsupported architecture: $ARCH_RAW"
-        exit 1
-        ;;
-esac
-
-BUSYBOX_URL="${BUSYBOX_BASE_URL}/${BUSYBOX_ARCH}"
+# Use the latest available busybox_UNZIP for x86_64
+BUSYBOX_VERSION="1.35.0-x86_64-linux-musl"
+BUSYBOX_BIN_URL="https://busybox.net/downloads/binaries/${BUSYBOX_VERSION}/busybox_UNZIP"
 BUSYBOX_BIN="$INSTALL_DIR/busybox-unzip"
 
-echo "[chezmoi] Downloading busybox $BUSYBOX_VERSION as unzip to $UNZIP_BIN..."
-echo "[chezmoi] Download URL: $BUSYBOX_URL"
-curl -fL -o "$BUSYBOX_BIN" "$BUSYBOX_URL" || { echo "[chezmoi] Download failed!"; exit 1; }
+# Only x86_64 is supported for this binary
+ARCH_RAW="$(uname -m)"
+echo "[chezmoi] Detected architecture: $ARCH_RAW"
+if [[ "$ARCH_RAW" != "x86_64" ]]; then
+    echo "[chezmoi] Only x86_64 is supported for busybox_UNZIP at this time."
+    exit 1
+fi
+
+echo "[chezmoi] Downloading busybox_UNZIP $BUSYBOX_VERSION as unzip to $UNZIP_BIN..."
+echo "[chezmoi] Download URL: $BUSYBOX_BIN_URL"
+curl -fL -o "$BUSYBOX_BIN" "$BUSYBOX_BIN_URL" || { echo "[chezmoi] Download failed!"; exit 1; }
 
 # Check if the file is a valid ELF binary
 echo "[chezmoi] Verifying downloaded file is a valid ELF binary..."
@@ -68,4 +53,4 @@ fi
 chmod +x "$BUSYBOX_BIN"
 ln -sf "$BUSYBOX_BIN" "$UNZIP_BIN"
 
-echo "[chezmoi] unzip installed to $UNZIP_BIN (via busybox $BUSYBOX_VERSION)."
+echo "[chezmoi] unzip installed to $UNZIP_BIN (via busybox_UNZIP $BUSYBOX_VERSION)."
