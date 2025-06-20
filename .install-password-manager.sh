@@ -57,8 +57,6 @@ install_1password() {
 echo "[chezmoi] Prewarming sudo..."
 sudo true
 
-install_7zip
-
 echo "[chezmoi] Checking if 1Password CLI is already installed..."
 check_1password_installed
 
