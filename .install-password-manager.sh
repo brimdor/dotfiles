@@ -4,6 +4,30 @@ set -euo pipefail
 
 user_path="$HOME/.local/bin"
 
+install_jq() {
+    if [[ -x "$user_path/jq" ]]; then
+        echo "[chezmoi] jq is already installed in $user_path."
+        return
+    fi
+
+    echo "[chezmoi] Installing jq binary..."
+    ARCH_RAW="$(uname -m)"
+    case "$ARCH_RAW" in
+        x86_64) JQ_ARCH="jq-linux64" ;;
+        aarch64 | arm64) JQ_ARCH="jq-linuxarm64" ;;
+        armv7l) JQ_ARCH="jq-linuxarm" ;;
+        i386) JQ_ARCH="jq-linux32" ;;
+        *) echo "[chezmoi] Unsupported architecture for jq: $ARCH_RAW" && exit 1 ;;
+    esac
+
+    mkdir -p "$user_path"
+    JQ_URL="https://github.com/jqlang/jq/releases/latest/download/$JQ_ARCH"
+    curl -L -o "$user_path/jq" "$JQ_URL" || { echo "[chezmoi] jq download failed!"; exit 1; }
+    chmod +x "$user_path/jq"
+    export PATH="$user_path:$PATH"
+    echo "[chezmoi] jq installed to $user_path."
+}
+
 # Function to get the latest 7zip release version from GitHub
 get_latest_7zip_asset() {
     ARCH_RAW="$(uname -m)"
