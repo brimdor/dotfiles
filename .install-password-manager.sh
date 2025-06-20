@@ -5,15 +5,44 @@ set -euo pipefail
 user_path="$HOME/.local/bin"
 
 # Function to get the latest 7zip release version from GitHub
-get_latest_7zip_version() {
-    curl -s "https://api.github.com/repos/ip7z/7zip/releases/latest" | \
-        grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'
+get_latest_7zip_asset() {
+    ARCH_RAW="$(uname -m)"
+    case "$ARCH_RAW" in
+        x86_64) ARCH="linux-x64" ;;
+        aarch64 | arm64) ARCH="linux-arm64" ;;
+        armv7l) ARCH="linux-arm" ;;
+        i386) ARCH="linux-x86" ;;
+        *) echo "[chezmoi] Unsupported architecture: $ARCH_RAW" && exit 1 ;;
+    esac
+
+    # Get the asset info from GitHub API
+    ASSET_INFO=$(curl -s "https://api.github.com/repos/ip7z/7zip/releases/latest" | \
+        jq -r --arg ARCH "$ARCH" '.assets[] | select(.name | test($ARCH)) | "\(.name) \(.browser_download_url)"' | head -1)
+
+    if [[ -z "$ASSET_INFO" ]]; then
+        echo "[chezmoi] Could not find a 7zip release for $ARCH"
+        exit 1
+    fi
+
+    ASSET_NAME=$(echo "$ASSET_INFO" | awk '{print $1}')
+    ASSET_URL=$(echo "$ASSET_INFO" | awk '{print $2}')
+    # Extract version from asset name, e.g., 7z2409-linux-x64.tar.xz -> 2409 -> 24.09
+    VERSION_RAW=$(echo "$ASSET_NAME" | grep -oP '7z\K[0-9]+' | head -1)
+    VERSION="${VERSION_RAW:0:2}.${VERSION_RAW:2:2}"
+
+    echo "$ASSET_NAME|$ASSET_URL|$VERSION"
 }
 
-# Function to install 7zip binary for the current architecture
 install_7zip() {
+    command -v jq >/dev/null 2>&1 || { echo "[chezmoi] jq is required but not installed."; exit 1; }
+    command -v xz >/dev/null 2>&1 || { echo "[chezmoi] xz is required but not installed."; exit 1; }
+
     echo "[chezmoi] Checking latest 7zip version..."
-    LATEST_7ZIP_VERSION="$(get_latest_7zip_version)"
+    ASSET_INFO=$(get_latest_7zip_asset)
+    ASSET_NAME=$(echo "$ASSET_INFO" | cut -d'|' -f1)
+    ASSET_URL=$(echo "$ASSET_INFO" | cut -d'|' -f2)
+    LATEST_7ZIP_VERSION=$(echo "$ASSET_INFO" | cut -d'|' -f3)
+
     if [[ -z "$LATEST_7ZIP_VERSION" ]]; then
         echo "[chezmoi] Failed to fetch latest 7zip version."
         exit 1
@@ -22,30 +51,17 @@ install_7zip() {
     # Check if 7z is already installed and up-to-date
     if command -v 7zz &>/dev/null; then
         INSTALLED_VERSION="$(7zz | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"
-        if [[ "$INSTALLED_VERSION" == "${LATEST_7ZIP_VERSION#v}" ]]; then
+        if [[ "$INSTALLED_VERSION" == "$LATEST_7ZIP_VERSION" ]]; then
             echo "[chezmoi] 7zip $INSTALLED_VERSION is already installed."
             return
         fi
     fi
 
-    ARCH_RAW="$(uname -m)"
-    case "$ARCH_RAW" in
-        x86_64) ARCH="x64" ;;
-        aarch64 | arm64) ARCH="arm64" ;;
-        armv7l) ARCH="arm" ;;
-        i386) ARCH="x86" ;;
-        *) echo "[chezmoi] Unsupported architecture: $ARCH_RAW" && exit 1 ;;
-    esac
-
-    # Compose download URL for the latest release
-    ZIP_NAME="7zz_${ARCH}.tar.xz"
-    DOWNLOAD_URL="https://github.com/ip7z/7zip/releases/download/${LATEST_7ZIP_VERSION}/${ZIP_NAME}"
-
-    echo "[chezmoi] Downloading 7zip $LATEST_7ZIP_VERSION for $ARCH..."
-    curl -L -o "/tmp/$ZIP_NAME" "$DOWNLOAD_URL" || { echo "[chezmoi] Download failed!"; exit 1; }
+    echo "[chezmoi] Downloading $ASSET_NAME..."
+    curl -L -o "/tmp/$ASSET_NAME" "$ASSET_URL" || { echo "[chezmoi] Download failed!"; exit 1; }
 
     echo "[chezmoi] Extracting 7zip binary..."
-    tar -xf "/tmp/$ZIP_NAME" -C "$user_path" 7zz || { echo "[chezmoi] Extraction failed!"; exit 1; }
+    tar -xf "/tmp/$ASSET_NAME" -C "$user_path" 7zz || { echo "[chezmoi] Extraction failed!"; exit 1; }
     chmod +x "$user_path/7zz"
 
     echo "[chezmoi] 7zip $LATEST_7ZIP_VERSION installation completed."
