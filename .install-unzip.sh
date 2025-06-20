@@ -25,15 +25,9 @@ fi
 echo "[chezmoi] Creating install directory: $INSTALL_DIR"
 mkdir -p "$INSTALL_DIR"
 
-# Get the latest busybox version from the official BusyBox binaries directory
-BUSYBOX_BASE_URL="https://busybox.net/downloads/binaries/"
-BUSYBOX_LIST_URL="${BUSYBOX_BASE_URL}"
-BUSYBOX_LATEST_VERSION=$(curl -sSL "$BUSYBOX_LIST_URL" | grep -Eo 'binaries/[0-9.]+-[^/]+/' | sort -V | tail -n1 | sed 's|binaries/\(.*\)/|\1|')
-
-if [[ -z "$BUSYBOX_LATEST_VERSION" ]]; then
-    echo "[chezmoi] Could not determine latest busybox version from busybox.net. Using fallback version 1.36.1-defconfig-multiarch-musl." >&2
-    BUSYBOX_LATEST_VERSION="1.36.1-defconfig-multiarch-musl"
-fi
+# Use a trusted, stable BusyBox version and directory
+BUSYBOX_VERSION="1.36.1-defconfig-multiarch-musl"
+BUSYBOX_BASE_URL="https://busybox.net/downloads/binaries/${BUSYBOX_VERSION}"
 
 ARCH_RAW="$(uname -m)"
 echo "[chezmoi] Detected architecture: $ARCH_RAW"
@@ -56,10 +50,10 @@ case "$ARCH_RAW" in
         ;;
 esac
 
-BUSYBOX_URL="${BUSYBOX_BASE_URL}${BUSYBOX_LATEST_VERSION}/${BUSYBOX_ARCH}"
+BUSYBOX_URL="${BUSYBOX_BASE_URL}/${BUSYBOX_ARCH}"
 BUSYBOX_BIN="$INSTALL_DIR/busybox-unzip"
 
-echo "[chezmoi] Downloading busybox $BUSYBOX_LATEST_VERSION as unzip to $UNZIP_BIN..."
+echo "[chezmoi] Downloading busybox $BUSYBOX_VERSION as unzip to $UNZIP_BIN..."
 echo "[chezmoi] Download URL: $BUSYBOX_URL"
 curl -fL -o "$BUSYBOX_BIN" "$BUSYBOX_URL" || { echo "[chezmoi] Download failed!"; exit 1; }
 
@@ -74,4 +68,4 @@ fi
 chmod +x "$BUSYBOX_BIN"
 ln -sf "$BUSYBOX_BIN" "$UNZIP_BIN"
 
-echo "[chezmoi] unzip installed to $UNZIP_BIN (via busybox $BUSYBOX_LATEST_VERSION)."
+echo "[chezmoi] unzip installed to $UNZIP_BIN (via busybox $BUSYBOX_VERSION)."
