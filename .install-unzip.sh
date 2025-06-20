@@ -19,7 +19,7 @@ mkdir -p "$INSTALL_DIR"
 
 # Get the latest busybox version from GitHub releases (e.g., 1_36_1)
 echo "[chezmoi] Fetching latest busybox version from GitHub..."
-BUSYBOX_VERSION=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/landley/busybox/releases/latest | sed -E 's#.*/tag/([^/]+)$#\1#')
+BUSYBOX_VERSION=$(curl -s https://api.github.com/repos/landley/busybox/releases/latest | grep 'tag_name' | sed -E 's/.*\"([^"]+)\".*/\1/')
 echo "[chezmoi] Latest busybox version: $BUSYBOX_VERSION"
 if [[ -z "$BUSYBOX_VERSION" ]]; then
     echo "[chezmoi] Could not determine latest busybox version from GitHub." >&2

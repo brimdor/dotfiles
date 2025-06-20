@@ -7,6 +7,11 @@ Coding standards, domain knowledge, and preferences that AI should follow.
 - Do not ask for clarification or additional information.
 - Do not request user input or confirmation.
 
+## Documentation
+- Chezmoi Documentation:
+    - https://www.chezmoi.io/reference/
+    - https://www.chezmoi.io/user-guide/command-overview/
+
 # Coding Standards and Preferences
 ## General Guidelines
 - All installs are binary installs and there must be a version check before installing every time to make sure we get the latest version.
