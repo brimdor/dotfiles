@@ -4,31 +4,7 @@ set -euo pipefail
 
 user_path="$HOME/.local/bin"
 
-install_jq() {
-    if [[ -x "$user_path/jq" ]]; then
-        echo "[chezmoi] jq is already installed in $user_path."
-        return
-    fi
-
-    echo "[chezmoi] Installing jq binary..."
-    ARCH_RAW="$(uname -m)"
-    case "$ARCH_RAW" in
-        x86_64) JQ_ARCH="jq-linux64" ;;
-        aarch64 | arm64) JQ_ARCH="jq-linuxarm64" ;;
-        armv7l) JQ_ARCH="jq-linuxarm" ;;
-        i386) JQ_ARCH="jq-linux32" ;;
-        *) echo "[chezmoi] Unsupported architecture for jq: $ARCH_RAW" && exit 1 ;;
-    esac
-
-    mkdir -p "$user_path"
-    JQ_URL="https://github.com/jqlang/jq/releases/latest/download/$JQ_ARCH"
-    curl -L -o "$user_path/jq" "$JQ_URL" || { echo "[chezmoi] jq download failed!"; exit 1; }
-    chmod +x "$user_path/jq"
-    export PATH="$user_path:$PATH"
-    echo "[chezmoi] jq installed to $user_path."
-}
-
-# Function to get the latest 7zip release version from GitHub
+# Function to get the latest 7zip release version from GitHub using sed and grep
 get_latest_7zip_asset() {
     ARCH_RAW="$(uname -m)"
     case "$ARCH_RAW" in
@@ -39,17 +15,20 @@ get_latest_7zip_asset() {
         *) echo "[chezmoi] Unsupported architecture: $ARCH_RAW" && exit 1 ;;
     esac
 
-    # Get the asset info from GitHub API
-    ASSET_INFO=$(curl -s "https://api.github.com/repos/ip7z/7zip/releases/latest" | \
-        jq -r --arg ARCH "$ARCH" '.assets[] | select(.name | test($ARCH)) | "\(.name) \(.browser_download_url)"' | head -1)
+    # Get the asset info from GitHub API using sed/grep/awk
+    ASSET_INFO=$(curl -s "https://api.github.com/repos/ip7z/7zip/releases/latest" |
+        sed -n '/"name":/p;/"browser_download_url":/p' |
+        paste - - |
+        grep "$ARCH" |
+        head -1)
 
     if [[ -z "$ASSET_INFO" ]]; then
         echo "[chezmoi] Could not find a 7zip release for $ARCH"
         exit 1
     fi
 
-    ASSET_NAME=$(echo "$ASSET_INFO" | awk '{print $1}')
-    ASSET_URL=$(echo "$ASSET_INFO" | awk '{print $2}')
+    ASSET_NAME=$(echo "$ASSET_INFO" | sed -E 's/.*"name": "([^"]+)".*/\1/' | awk '{print $1}')
+    ASSET_URL=$(echo "$ASSET_INFO" | sed -E 's/.*"browser_download_url": "([^"]+)".*/\1/' | awk '{print $1}')
     # Extract version from asset name, e.g., 7z2409-linux-x64.tar.xz -> 2409 -> 24.09
     VERSION_RAW=$(echo "$ASSET_NAME" | grep -oP '7z\K[0-9]+' | head -1)
     VERSION="${VERSION_RAW:0:2}.${VERSION_RAW:2:2}"
@@ -58,9 +37,6 @@ get_latest_7zip_asset() {
 }
 
 install_7zip() {
-    command -v jq >/dev/null 2>&1 || { echo "[chezmoi] jq is required but not installed."; exit 1; }
-    command -v xz >/dev/null 2>&1 || { echo "[chezmoi] xz is required but not installed."; exit 1; }
-
     echo "[chezmoi] Checking latest 7zip version..."
     ASSET_INFO=$(get_latest_7zip_asset)
     ASSET_NAME=$(echo "$ASSET_INFO" | cut -d'|' -f1)
@@ -138,7 +114,6 @@ install_1password() {
 echo "[chezmoi] Prewarming sudo..."
 sudo true
 
-install_jq
 install_7zip
 
 echo "[chezmoi] Checking if 1Password CLI is already installed..."
