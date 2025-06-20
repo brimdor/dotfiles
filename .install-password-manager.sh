@@ -60,6 +60,7 @@ install_7zip() {
     curl -L -o "/tmp/$ASSET_NAME" "$ASSET_URL" || { echo "[chezmoi] Download failed!"; exit 1; }
 
     echo "[chezmoi] Extracting 7zip binary..."
+    echo "[chezmoi] Check Tar version: $(tar --version | head -1)"
     tar -xf "/tmp/$ASSET_NAME" -C "$user_path" 7zz || { echo "[chezmoi] Extraction failed!"; exit 1; }
     chmod +x "$user_path/7zz"
 
