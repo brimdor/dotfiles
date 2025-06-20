@@ -8,6 +8,14 @@ set -x
 INSTALL_DIR="$HOME/.local/bin"
 UNZIP_BIN="$INSTALL_DIR/unzip"
 
+# Only run on Linux
+echo "[chezmoi] Checking OS..."
+OS_NAME="$(uname -s | tr '[:upper:]' '[:lower:]')"
+if [[ "$OS_NAME" != "linux" ]]; then
+    echo "[chezmoi] Not a Linux system. Skipping unzip install."
+    exit 0
+fi
+
 # Check if unzip is already installed in $HOME/.local/bin or system-wide
 if command -v unzip &>/dev/null; then
     echo "[chezmoi] unzip is already installed."
@@ -17,23 +25,30 @@ fi
 echo "[chezmoi] Creating install directory: $INSTALL_DIR"
 mkdir -p "$INSTALL_DIR"
 
-# Get the latest busybox version from GitHub releases (e.g., 1_36_1)
-echo "[chezmoi] Fetching latest busybox version from GitHub..."
-BUSYBOX_VERSION=$(curl -s https://api.github.com/repos/landley/busybox/releases/latest | grep 'tag_name' | sed -E 's/.*\"([^"]+)\".*/\1/')
-echo "[chezmoi] Latest busybox version: $BUSYBOX_VERSION"
-if [[ -z "$BUSYBOX_VERSION" ]]; then
-    echo "[chezmoi] Could not determine latest busybox version from GitHub." >&2
-    exit 1
+# Get the latest busybox version from the official BusyBox binaries directory
+BUSYBOX_BASE_URL="https://busybox.net/downloads/binaries/"
+BUSYBOX_LIST_URL="${BUSYBOX_BASE_URL}"
+BUSYBOX_LATEST_VERSION=$(curl -sSL "$BUSYBOX_LIST_URL" | grep -Eo 'binaries/[0-9.]+-[^/]+/' | sort -V | tail -n1 | sed 's|binaries/\(.*\)/|\1|')
+
+if [[ -z "$BUSYBOX_LATEST_VERSION" ]]; then
+    echo "[chezmoi] Could not determine latest busybox version from busybox.net. Using fallback version 1.36.1-defconfig-multiarch-musl." >&2
+    BUSYBOX_LATEST_VERSION="1.36.1-defconfig-multiarch-musl"
 fi
 
 ARCH_RAW="$(uname -m)"
 echo "[chezmoi] Detected architecture: $ARCH_RAW"
 case "$ARCH_RAW" in
     x86_64)
-        BUSYBOX_URL="https://github.com/landley/busybox/releases/download/${BUSYBOX_VERSION}/busybox-x86_64"
+        BUSYBOX_ARCH="busybox-x86_64"
         ;;
-    aarch64 | arm64)
-        BUSYBOX_URL="https://github.com/landley/busybox/releases/download/${BUSYBOX_VERSION}/busybox-arm64"
+    aarch64|arm64)
+        BUSYBOX_ARCH="busybox-aarch64"
+        ;;
+    armv7l)
+        BUSYBOX_ARCH="busybox-armv7l"
+        ;;
+    i386|i686)
+        BUSYBOX_ARCH="busybox-i686"
         ;;
     *)
         echo "[chezmoi] Unsupported architecture: $ARCH_RAW"
@@ -41,9 +56,10 @@ case "$ARCH_RAW" in
         ;;
 esac
 
+BUSYBOX_URL="${BUSYBOX_BASE_URL}${BUSYBOX_LATEST_VERSION}/${BUSYBOX_ARCH}"
 BUSYBOX_BIN="$INSTALL_DIR/busybox-unzip"
 
-echo "[chezmoi] Downloading busybox $BUSYBOX_VERSION as unzip to $UNZIP_BIN..."
+echo "[chezmoi] Downloading busybox $BUSYBOX_LATEST_VERSION as unzip to $UNZIP_BIN..."
 echo "[chezmoi] Download URL: $BUSYBOX_URL"
 curl -fL -o "$BUSYBOX_BIN" "$BUSYBOX_URL" || { echo "[chezmoi] Download failed!"; exit 1; }
 
@@ -58,4 +74,4 @@ fi
 chmod +x "$BUSYBOX_BIN"
 ln -sf "$BUSYBOX_BIN" "$UNZIP_BIN"
 
-echo "[chezmoi] unzip installed to $UNZIP_BIN (via busybox $BUSYBOX_VERSION)."
+echo "[chezmoi] unzip installed to $UNZIP_BIN (via busybox $BUSYBOX_LATEST_VERSION)."
