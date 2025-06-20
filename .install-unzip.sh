@@ -25,7 +25,7 @@ fi
 echo "[chezmoi] Creating install directory: $INSTALL_DIR"
 mkdir -p "$INSTALL_DIR"
 
-# Use a trusted, stable BusyBox version and directory
+# Set BusyBox version and base URL
 BUSYBOX_VERSION="1.36.1-defconfig-multiarch-musl"
 BUSYBOX_BASE_URL="https://busybox.net/downloads/binaries/${BUSYBOX_VERSION}"
 
