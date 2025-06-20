@@ -11,6 +11,8 @@ BUSYBOX_BIN="$INSTALL_DIR/busybox-unzip"
 BUSYBOX_VERSION="1.37.0"
 BUSYBOX_TARBALL="busybox-${BUSYBOX_VERSION}.tar.bz2"
 BUSYBOX_URL="https://busybox.net/downloads/${BUSYBOX_TARBALL}"
+BUSYBOX_BZ2_HELPER="/tmp/busybox-bz2-helper"
+BUSYBOX_BZ2_URL="https://busybox.net/downloads/binaries/1.36.1-defconfig-multiarch-musl/busybox-x86_64"
 
 # Only run on Linux
 echo "[chezmoi] Checking OS..."
@@ -29,11 +31,25 @@ fi
 echo "[chezmoi] Creating install directory: $INSTALL_DIR"
 mkdir -p "$INSTALL_DIR"
 
-# Download and extract BusyBox source
+# Download BusyBox tarball
+
 echo "[chezmoi] Downloading BusyBox $BUSYBOX_VERSION source..."
 curl -fL -o "/tmp/$BUSYBOX_TARBALL" "$BUSYBOX_URL" || { echo "[chezmoi] Download failed!"; exit 1; }
+
+# Extract BusyBox source, using bzip2 or busybox-bzip2 if needed
+echo "[chezmoi] Extracting BusyBox source..."
 cd /tmp
-tar -xjf "$BUSYBOX_TARBALL"
+if command -v bzip2 &>/dev/null; then
+    tar -xjf "$BUSYBOX_TARBALL"
+else
+    echo "[chezmoi] bzip2 not found, using busybox bzip2 applet."
+    # Download a static busybox binary for bzip2
+    curl -fL -o "$BUSYBOX_BZ2_HELPER" "$BUSYBOX_BZ2_URL"
+    chmod +x "$BUSYBOX_BZ2_HELPER"
+    "$BUSYBOX_BZ2_HELPER" bzip2 -d -c "$BUSYBOX_TARBALL" > "/tmp/busybox-${BUSYBOX_VERSION}.tar"
+    tar -xf "/tmp/busybox-${BUSYBOX_VERSION}.tar"
+    rm -f "$BUSYBOX_BZ2_HELPER" "/tmp/busybox-${BUSYBOX_VERSION}.tar"
+fi
 cd "busybox-$BUSYBOX_VERSION"
 
 # Configure and build BusyBox with static linking and unzip enabled
