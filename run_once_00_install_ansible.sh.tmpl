@@ -24,7 +24,6 @@ check_ansible_version() {
 
 # Function to install Ansible based on the OS
 install_ansible() {
-    export DEBIAN_FRONTEND=noninteractive
     {{ if eq .osid "darwin" }}
     echo "[chezmoi] Installing Ansible on macOS..."
     # macOS-specific code
@@ -44,24 +43,23 @@ install_ansible() {
 
     {{ else if eq .osid "linux-debian" }}
     echo "[chezmoi] Installing Ansible on Debian-based systems..."
-    export DEBIAN_FRONTEND=noninteractive
-    sudo apt-get update -qq > /dev/null
-    sudo apt-get install wget gpg -y -qq > /dev/null
+    sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq > /dev/null
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install wget gpg -y -qq > /dev/null
     # Get debian code name
     DEBIAN_CODENAME=$(. /etc/os-release && echo $VERSION_CODENAME)
     wget -qO- "https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=get&search=0x6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367" | sudo gpg --dearmour -o /usr/share/keyrings/ansible-archive-keyring.gpg
     echo "deb http://deb.debian.org/debian ${DEBIAN_CODENAME}-backports main" | sudo tee /etc/apt/sources.list.d/backports.list > /dev/null
-    sudo apt-get update -qq > /dev/null
-    sudo apt-get install software-properties-common python3 python3-pip -y -qq > /dev/null
-    sudo apt-get install ansible -t ${DEBIAN_CODENAME}-backports -y -qq > /dev/null || true
+    sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq > /dev/null
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install software-properties-common python3 python3-pip -y -qq > /dev/null
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install ansible -t ${DEBIAN_CODENAME}-backports -y -qq > /dev/null || true
     check_ansible_version
 
     {{ else if eq .osid "linux-ubuntu" }}
     echo "[chezmoi] Installing Ansible on Ubuntu..."
-    sudo apt-get update -qq > /dev/null
-    sudo apt-get install software-properties-common python3 python3-pip -y -qq > /dev/null
+    sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq > /dev/null
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install software-properties-common python3 python3-pip -y -qq > /dev/null
     sudo add-apt-repository -y -update ppa:ansible/ansible > /dev/null
-    sudo apt install -y ansible -qq > /dev/null || true
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ansible -qq > /dev/null || true
     check_ansible_version
 
     {{ else if eq .osid "linux-fedora" }}
