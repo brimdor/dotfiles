@@ -1,25 +1,20 @@
 #!/bin/bash
 
 set -euo pipefail
-set -x
-# trap 'echo "[chezmoi] ERROR: Script failed at line $LINENO: $BASH_COMMAND" >&2' ERR
 
-# Pre-flight check function for Ansible - Exit if Ansible is already installed in $HOME/.local/bin
+# Pre-flight check function for Ansible - Exit if Ansible is already installed
 check_ansible_installed() {
-    echo "[chezmoi] Checking if Ansible is already installed in $HOME/.local/bin..."
-    if [[ -x "$HOME/.local/bin/ansible" ]]; then
-        echo "[chezmoi] Ansible is already installed in $HOME/.local/bin."
+    if command -v ansible &>/dev/null; then
+        echo "[chezmoi] Ansible is already installed."
         exit 0
     fi
-    echo "[chezmoi] Ansible not found in $HOME/.local/bin."
 }
 
 # Function to check if Ansible exists post-installation and its version - Exit with error if not found
 check_ansible_version() {
-    echo "[chezmoi] Verifying Ansible installation and version in $HOME/.local/bin..."
-    if [[ -x "$HOME/.local/bin/ansible" ]]; then
-        echo "[chezmoi] Ansible is installed successfully in $HOME/.local/bin."
-        ANSIBLE_VERSION=$("$HOME/.local/bin/ansible" --version | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+    if command -v ansible &>/dev/null; then
+        echo "[chezmoi] Ansible is installed successfully."
+        ANSIBLE_VERSION=$(ansible --version | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
         echo "[chezmoi] Ansible version: $ANSIBLE_VERSION"
     else
         echo "[chezmoi] Ansible did not install properly! Please check the installation logs."
@@ -27,157 +22,60 @@ check_ansible_version() {
     fi
 }
 
-# Function to get the latest version of a PyPI package
-get_latest_pypi_version() {
-    PACKAGE_NAME="$1"
-    echo "[chezmoi] Fetching latest version for $PACKAGE_NAME from PyPI..."
-    curl -s "https://pypi.org/pypi/${PACKAGE_NAME}/json" | grep '"version":' | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+'
-}
-
-# Function to install Python (binary only, no package manager)
-install_python() {
-    echo "[chezmoi] Checking for Python in $HOME/.local/bin/python3..."
-    if [[ -x "$HOME/.local/bin/python3" ]]; then
-        CURRENT_VERSION=$($HOME/.local/bin/python3 --version | awk '{print $2}')
-        # Try GitHub API first
-        LATEST_VERSION=$(curl -s https://api.github.com/repos/python/cpython/releases/latest | grep -Po '"tag_name": "\K[^\"]*' | sed 's/^v//' || true)
-        if [[ -n "$LATEST_VERSION" ]]; then
-            echo "[chezmoi] Got latest version from GitHub API: $LATEST_VERSION"
-        fi
-        # Fallback to scraping python.org if GitHub fails
-        if [[ -z "$LATEST_VERSION" ]]; then
-            PYTHON_ORG_HTML=$(curl -s https://www.python.org/downloads/)
-            LATEST_VERSION=$(echo "$PYTHON_ORG_HTML" | grep -Po 'Latest Python 3 Release - Python[ </a>]*\K[0-9.]+' || true)
-            if [[ -n "$LATEST_VERSION" ]]; then
-                echo "[chezmoi] Got latest version from python.org: $LATEST_VERSION"
-            else
-                echo "[chezmoi] DEBUG: python.org HTML was: $PYTHON_ORG_HTML" >&2
-            fi
-        fi
-        # Fallback to hardcoded version if all else fails
-        if [[ -z "$LATEST_VERSION" ]]; then
-            LATEST_VERSION="3.12.3"
-            echo "[chezmoi] WARNING: Could not determine latest Python version, falling back to $LATEST_VERSION" >&2
-        fi
-        echo "[chezmoi] Python current version: $CURRENT_VERSION, latest: $LATEST_VERSION"
-        if [[ "$CURRENT_VERSION" == "$LATEST_VERSION" ]]; then
-            echo "[chezmoi] Python is up to date. Skipping install."
-            return
-        fi
-        echo "[chezmoi] Python is outdated. Will install latest version."
-    else
-        echo "[chezmoi] Python not found in $HOME/.local/bin. Will install latest version."
-    fi
-    echo "[chezmoi] Installing latest Python binary..."
-    # Try GitHub API first
-    PYTHON_VERSION=$(curl -s https://api.github.com/repos/python/cpython/releases/latest | grep -Po '"tag_name": "\K[^\"]*' | sed 's/^v//' || true)
-    if [[ -n "$PYTHON_VERSION" ]]; then
-        echo "[chezmoi] Got Python version from GitHub API: $PYTHON_VERSION"
-    fi
-    # Fallback to scraping python.org if GitHub fails
-    if [[ -z "$PYTHON_VERSION" ]]; then
-        PYTHON_ORG_HTML=$(curl -s https://www.python.org/downloads/)
-        PYTHON_VERSION=$(echo "$PYTHON_ORG_HTML" | grep -Po 'Latest Python 3 Release - Python[ </a>]*\K[0-9.]+' || true)
-        if [[ -n "$PYTHON_VERSION" ]]; then
-            echo "[chezmoi] Got Python version from python.org: $PYTHON_VERSION"
-        else
-            echo "[chezmoi] DEBUG: python.org HTML was: $PYTHON_ORG_HTML" >&2
-        fi
-    fi
-    # Fallback to hardcoded version if all else fails
-    if [[ -z "$PYTHON_VERSION" ]]; then
-        PYTHON_VERSION="3.12.3"
-        echo "[chezmoi] WARNING: Could not determine latest Python version, falling back to $PYTHON_VERSION" >&2
-    fi
-    echo "[chezmoi] Downloading Python $PYTHON_VERSION..."
-    PYTHON_TAR="Python-${PYTHON_VERSION}.tgz"
-    mkdir -p "$HOME/.local/src"
-    cd "$HOME/.local/src"
-    curl -LO "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz"
-    if [[ ! -f "$PYTHON_TAR" ]]; then
-        echo "[chezmoi] ERROR: Failed to download Python tarball." >&2
-        exit 3
-    fi
-    echo "[chezmoi] Extracting Python $PYTHON_TAR..."
-    tar -xzf "$PYTHON_TAR"
-    cd "Python-${PYTHON_VERSION}"
-    echo "[chezmoi] Configuring Python build..."
-    ./configure --prefix="$HOME/.local" --enable-optimizations --with-ensurepip=install
-    echo "[chezmoi] Building Python (this may take a while)..."
-    make -j"$(nproc)"
-    echo "[chezmoi] Installing Python to $HOME/.local..."
-    make install
-    export PATH="$HOME/.local/bin:$PATH"
-    echo "[chezmoi] Python installation complete."
-}
-
-# Function to install pip (using ensurepip from python3)
-install_pip() {
-    echo "[chezmoi] Checking for pip3 in $HOME/.local/bin/pip3..."
-    if [[ -x "$HOME/.local/bin/pip3" ]]; then
-        echo "[chezmoi] pip3 already installed."
-        return
-    fi
-    echo "[chezmoi] Installing pip3 using ensurepip..."
-    "$HOME/.local/bin/python3" -m ensurepip --upgrade
-    export PATH="$HOME/.local/bin:$PATH"
-    echo "[chezmoi] pip3 installation complete."
-}
-
-# Function to install or upgrade Ansible using pip --user
+# Function to install Ansible based on the OS
 install_ansible() {
-    export PATH="$HOME/.local/bin:$PATH"
-    echo "[chezmoi] Checking for latest Ansible version on PyPI..."
-    LATEST_ANSIBLE_VERSION=$(get_latest_pypi_version ansible)
-    if [[ -x "$HOME/.local/bin/ansible" ]]; then
-        CURRENT_ANSIBLE_VERSION=$("$HOME/.local/bin/ansible" --version | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-        echo "[chezmoi] Ansible current version: $CURRENT_ANSIBLE_VERSION, latest: $LATEST_ANSIBLE_VERSION"
-        if [[ "$CURRENT_ANSIBLE_VERSION" == "$LATEST_ANSIBLE_VERSION" ]]; then
-            echo "[chezmoi] Ansible is up to date. Skipping install."
-            return
-        fi
-        echo "[chezmoi] Ansible is outdated. Will upgrade to $LATEST_ANSIBLE_VERSION."
-    else
-        echo "[chezmoi] Ansible not found in $HOME/.local/bin. Will install $LATEST_ANSIBLE_VERSION."
+    {{ if eq .osid "darwin" }}
+    echo "[chezmoi] Installing Ansible on macOS..."
+    # macOS-specific code
+    if ! command -v brew &>/dev/null; then
+        echo "[chezmoi] Homebrew is not installed. Please install Homebrew first and re-run this Chezmoi setup."
+        exit 1
     fi
-    echo "[chezmoi] Installing/upgrading Ansible to $LATEST_ANSIBLE_VERSION using pip --user..."
-    "$HOME/.local/bin/pip3" install --user --upgrade "ansible==$LATEST_ANSIBLE_VERSION"
-    export PATH="$HOME/.local/bin:$PATH"
+    brew update
+    brew install ansible || true
     check_ansible_version
-}
 
-# Function to install build dependencies for Python (Debian/Ubuntu)
-install_build_deps() {
-    echo "[chezmoi] Installing build dependencies for Python..."
+    {{ else if eq .osid "linux-arch" }}
+    echo "[chezmoi] Installing Ansible on Arch Linux..."
+    # Arch Linux-specific code
+    sudo pacman -S --noconfirm --needed ansible || true
+    check_ansible_version
+
+    {{ else if eq .osid "linux-debian" }}
+    echo "[chezmoi] Installing Ansible on Debian-based systems..."
     export DEBIAN_FRONTEND=noninteractive
-    sudo DEBIAN_FRONTEND=noninteractive apt-get update -y -q -q -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q -q --no-install-recommends \
-        build-essential \
-        zlib1g-dev \
-        libssl-dev \
-        libbz2-dev \
-        libreadline-dev \
-        libsqlite3-dev \
-        libffi-dev \
-        libncursesw5-dev \
-        libgdbm-dev \
-        liblzma-dev \
-        tk-dev \
-        uuid-dev \
-        curl \
-        wget
-    echo "[chezmoi] Build dependencies installed."
+    sudo apt-get update -qq > /dev/null
+    sudo apt-get install wget gpg -y -qq > /dev/null
+    # Get debian code name
+    DEBIAN_CODENAME=$(. /etc/os-release && echo $VERSION_CODENAME)
+    wget -qO- "https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=get&search=0x6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367" | sudo gpg --dearmour -o /usr/share/keyrings/ansible-archive-keyring.gpg
+    echo "deb http://deb.debian.org/debian ${DEBIAN_CODENAME}-backports main" | sudo tee /etc/apt/sources.list.d/backports.list > /dev/null
+    sudo apt-get update -qq > /dev/null
+    sudo apt-get install software-properties-common python3 python3-pip -y -qq > /dev/null
+    sudo apt-get install ansible -t ${DEBIAN_CODENAME}-backports -y -qq > /dev/null || true
+    check_ansible_version
+
+    {{ else if eq .osid "linux-ubuntu" }}
+    echo "[chezmoi] Installing Ansible on Ubuntu..."
+    sudo apt-get update -qq > /dev/null
+    sudo apt-get install software-properties-common python3 python3-pip -y -qq > /dev/null
+    sudo add-apt-repository -y -update ppa:ansible/ansible > /dev/null
+    sudo apt install -y ansible -qq > /dev/null || true
+    check_ansible_version
+
+    {{ else if eq .osid "linux-fedora" }}
+    echo "[chezmoi] Installing Ansible on Fedora..."
+    # Fedora-specific code
+    sudo dnf install -y ansible || true
+    check_ansible_version
+    {{ end }}
 }
 
 echo "[chezmoi] Prewarming sudo..."
 sudo true
-echo "[chezmoi] Starting Ansible install process with detailed troubleshooting..."
+echo "[chezmoi] Checking if Ansible is already installed..."
 check_ansible_installed
-install_build_deps
-echo "[chezmoi] Checking/installing Python..."
-install_python
-echo "[chezmoi] Checking/installing pip..."
-install_pip
-echo "[chezmoi] Checking/installing/upgrading Ansible..."
+echo "[chezmoi] Ansible not found! Proceeding with installation..."
+echo "[chezmoi] This may take a while, please be patient..."
 install_ansible
-echo "[chezmoi] Ansible installation completed successfully in $HOME/.local/bin!"
+echo "[chezmoi] Ansible installation completed successfully!"
