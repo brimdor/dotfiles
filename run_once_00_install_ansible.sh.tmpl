@@ -1,6 +1,10 @@
 #!/bin/bash
 
 set -euo pipefail
+set -x  # Enable debug output for troubleshooting
+
+# Trap errors and print a helpful message
+trap 'echo "[chezmoi] ERROR: Script failed at line $LINENO: $BASH_COMMAND" >&2' ERR
 
 # Pre-flight check function for Ansible - Exit if Ansible is already installed in $HOME/.local/bin
 check_ansible_installed() {
