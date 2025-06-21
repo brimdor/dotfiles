@@ -40,14 +40,14 @@ install_python() {
     if [[ -x "$HOME/.local/bin/python3" ]]; then
         CURRENT_VERSION=$($HOME/.local/bin/python3 --version | awk '{print $2}')
         # Try GitHub API first
-        LATEST_VERSION=$(curl -s https://api.github.com/repos/python/cpython/releases/latest | grep -Po '"tag_name": "\\K[^\"]*' | sed 's/^v//')
+        LATEST_VERSION=$(curl -s https://api.github.com/repos/python/cpython/releases/latest | grep -Po '"tag_name": "\K[^\"]*' | sed 's/^v//' || true)
         if [[ -n "$LATEST_VERSION" ]]; then
             echo "[chezmoi] Got latest version from GitHub API: $LATEST_VERSION"
         fi
         # Fallback to scraping python.org if GitHub fails
         if [[ -z "$LATEST_VERSION" ]]; then
             PYTHON_ORG_HTML=$(curl -s https://www.python.org/downloads/)
-            LATEST_VERSION=$(echo "$PYTHON_ORG_HTML" | grep -Po 'Latest Python 3 Release - Python[ </a>]*\K[0-9.]+')
+            LATEST_VERSION=$(echo "$PYTHON_ORG_HTML" | grep -Po 'Latest Python 3 Release - Python[ </a>]*\K[0-9.]+' || true)
             if [[ -n "$LATEST_VERSION" ]]; then
                 echo "[chezmoi] Got latest version from python.org: $LATEST_VERSION"
             else
@@ -70,14 +70,14 @@ install_python() {
     fi
     echo "[chezmoi] Installing latest Python binary..."
     # Try GitHub API first
-    PYTHON_VERSION=$(curl -s https://api.github.com/repos/python/cpython/releases/latest | grep -Po '"tag_name": "\\K[^\"]*' | sed 's/^v//')
+    PYTHON_VERSION=$(curl -s https://api.github.com/repos/python/cpython/releases/latest | grep -Po '"tag_name": "\K[^\"]*' | sed 's/^v//' || true)
     if [[ -n "$PYTHON_VERSION" ]]; then
         echo "[chezmoi] Got Python version from GitHub API: $PYTHON_VERSION"
     fi
     # Fallback to scraping python.org if GitHub fails
     if [[ -z "$PYTHON_VERSION" ]]; then
         PYTHON_ORG_HTML=$(curl -s https://www.python.org/downloads/)
-        PYTHON_VERSION=$(echo "$PYTHON_ORG_HTML" | grep -Po 'Latest Python 3 Release - Python[ </a>]*\K[0-9.]+')
+        PYTHON_VERSION=$(echo "$PYTHON_ORG_HTML" | grep -Po 'Latest Python 3 Release - Python[ </a>]*\K[0-9.]+' || true)
         if [[ -n "$PYTHON_VERSION" ]]; then
             echo "[chezmoi] Got Python version from python.org: $PYTHON_VERSION"
         else
