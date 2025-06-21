@@ -106,8 +106,8 @@ install_ansible() {
 install_build_deps() {
     echo "[chezmoi] Installing build dependencies for Python..."
     export DEBIAN_FRONTEND=noninteractive
-    sudo apt-get update -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold
-    sudo apt-get install -y --no-install-recommends \
+    sudo DEBIAN_FRONTEND=noninteractive apt-get update -y -q -q -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q -q --no-install-recommends \
         build-essential \
         zlib1g-dev \
         libssl-dev \
