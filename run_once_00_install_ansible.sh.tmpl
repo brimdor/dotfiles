@@ -24,6 +24,7 @@ check_ansible_version() {
 
 # Function to install Ansible based on the OS
 install_ansible() {
+    export DEBIAN_FRONTEND=noninteractive
     {{ if eq .osid "darwin" }}
     echo "[chezmoi] Installing Ansible on macOS..."
     # macOS-specific code
