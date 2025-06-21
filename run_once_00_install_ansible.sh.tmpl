@@ -1,9 +1,7 @@
 #!/bin/bash
 
 set -euo pipefail
-set -x  # Enable debug output for troubleshooting
-
-# Trap errors and print a helpful message
+set -x
 trap 'echo "[chezmoi] ERROR: Script failed at line $LINENO: $BASH_COMMAND" >&2' ERR
 
 # Pre-flight check function for Ansible - Exit if Ansible is already installed in $HOME/.local/bin
@@ -41,7 +39,17 @@ install_python() {
     echo "[chezmoi] Checking for Python in $HOME/.local/bin/python3..."
     if [[ -x "$HOME/.local/bin/python3" ]]; then
         CURRENT_VERSION=$($HOME/.local/bin/python3 --version | awk '{print $2}')
+        # Try GitHub API first
         LATEST_VERSION=$(curl -s https://api.github.com/repos/python/cpython/releases/latest | grep -Po '"tag_name": "\\K[^\"]*' | sed 's/^v//')
+        # Fallback to scraping python.org if GitHub fails
+        if [[ -z "$LATEST_VERSION" ]]; then
+            LATEST_VERSION=$(curl -s https://www.python.org/downloads/ | grep -Po 'Latest Python 3 Release - Python \K[0-9.]+')
+        fi
+        # Fallback to hardcoded version if all else fails
+        if [[ -z "$LATEST_VERSION" ]]; then
+            LATEST_VERSION="3.12.3"
+            echo "[chezmoi] WARNING: Could not determine latest Python version, falling back to $LATEST_VERSION" >&2
+        fi
         echo "[chezmoi] Python current version: $CURRENT_VERSION, latest: $LATEST_VERSION"
         if [[ "$CURRENT_VERSION" == "$LATEST_VERSION" ]]; then
             echo "[chezmoi] Python is up to date. Skipping install."
@@ -52,12 +60,26 @@ install_python() {
         echo "[chezmoi] Python not found in $HOME/.local/bin. Will install latest version."
     fi
     echo "[chezmoi] Installing latest Python binary..."
+    # Try GitHub API first
     PYTHON_VERSION=$(curl -s https://api.github.com/repos/python/cpython/releases/latest | grep -Po '"tag_name": "\\K[^\"]*' | sed 's/^v//')
+    # Fallback to scraping python.org if GitHub fails
+    if [[ -z "$PYTHON_VERSION" ]]; then
+        PYTHON_VERSION=$(curl -s https://www.python.org/downloads/ | grep -Po 'Latest Python 3 Release - Python \K[0-9.]+')
+    fi
+    # Fallback to hardcoded version if all else fails
+    if [[ -z "$PYTHON_VERSION" ]]; then
+        PYTHON_VERSION="3.12.3"
+        echo "[chezmoi] WARNING: Could not determine latest Python version, falling back to $PYTHON_VERSION" >&2
+    fi
     echo "[chezmoi] Downloading Python $PYTHON_VERSION..."
     PYTHON_TAR="Python-${PYTHON_VERSION}.tgz"
     mkdir -p "$HOME/.local/src"
     cd "$HOME/.local/src"
     curl -LO "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz"
+    if [[ ! -f "$PYTHON_TAR" ]]; then
+        echo "[chezmoi] ERROR: Failed to download Python tarball." >&2
+        exit 3
+    fi
     echo "[chezmoi] Extracting Python $PYTHON_TAR..."
     tar -xzf "$PYTHON_TAR"
     cd "Python-${PYTHON_VERSION}"
