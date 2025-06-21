@@ -6,11 +6,7 @@
 - name: Build list for {{ ansible_facts.distribution }}
   vars:
     candidate: >-
-      {{
-        item.get(ansible_facts.distribution)
-          | default(item.get(ansible_facts.os_family))
-          | default(item.name)
-      }}
+      {{ (item.get(ansible_facts.distribution) or item.get(ansible_facts.os_family) or item.name) }}
   set_fact:
     pkg_list: "{{ pkg_list + [candidate] }}"
   loop: "{{ development_tools }}"

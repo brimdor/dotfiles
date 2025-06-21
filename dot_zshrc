@@ -184,7 +184,10 @@ opFind() {
 }
 
 eval "$(zoxide init zsh)"
-eval "$(gh copilot alias -- zsh)"
+# Check if gh is installed and has copilot support - if so, set up the alias
+if command -v gh >/dev/null 2>&1 && gh copilot --help >/dev/null 2>&1; then
+    eval "$(gh copilot alias -- zsh)" >/dev/null 2>&1
+fi
 # ------------------------------------------------------------
 # Source all completion files
 for file in $HOME/.dotfiles/autocompletion/*.zsh; do

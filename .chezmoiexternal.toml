@@ -1,126 +1,115 @@
-{{ $nvimArch := .chezmoi.arch }}
-{{ if eq $nvimArch "arm64" }}{{ $nvimArch = "arm64" }}{{ end }}
-{{ if eq $nvimArch "amd64" }}{{ $nvimArch = "x86_64" }}{{ end }}
+{{/* Common architecture mappings */}}
+{{ $archLinuxGnu := .chezmoi.arch }}
+{{ if eq $archLinuxGnu "arm64" }}{{ $archLinuxGnu = "aarch64" }}{{ end }}
+{{ if eq $archLinuxGnu "amd64" }}{{ $archLinuxGnu = "x86_64" }}{{ end }}
+
+{{ $archNative := .chezmoi.arch }}
+
+{{ $archX64 := .chezmoi.arch }}
+{{ if eq $archX64 "amd64" }}{{ $archX64 = "x64" }}{{ end }}
+
+{{/* OS mappings */}}
+{{ $osNative := .chezmoi.os }}
+
+{{/* Neovim specific mappings */}}
+{{ $osName := .chezmoi.os }}
+{{ if eq $osName "darwin" }}{{ $osName = "macos" }}{{ end }}
+{{ $archNeovim := .chezmoi.arch }}
+{{ if eq $osName "linux" }}
+    {{ if eq $archNeovim "arm64" }}{{ $archNeovim = "aarch64" }}{{ end }}
+    {{ if eq $archNeovim "amd64" }}{{ $archNeovim = "x86_64" }}{{ end }}
+{{ end }}
 
 [".local/opt/nvim"]
     type            = "archive"
-    url             = "https://github.com/neovim/neovim/releases/download/v{{ template "get-github-latest-version" list "neovim/neovim" }}/nvim-linux-{{ $nvimArch }}.tar.gz"
+    url             = "https://github.com/neovim/neovim/releases/download/v{{ template "get-github-latest-version" list "neovim/neovim" }}/nvim-linux-{{ $archNeovim }}.tar.gz"
     stripComponents = 1
     refreshPeriod   = "168h"
 
-{{ $jnvArch := .chezmoi.arch }}
-{{ if eq $jnvArch "arm64" }}{{ $jnvArch = "aarch64" }}{{ end }}
-{{ if eq $jnvArch "amd64" }}{{ $jnvArch = "x86_64" }}{{ end }}
-
 [".local/bin/jnv"]
     type = "archive-file"
-    url = "https://github.com/ynqa/jnv/releases/download/v{{ template "get-github-latest-version" list "ynqa/jnv" }}/jnv-{{ $jnvArch }}-unknown-linux-gnu.tar.xz"
-    path = "jnv-{{ $jnvArch }}-unknown-linux-gnu/jnv"
+    url = "https://github.com/ynqa/jnv/releases/download/v{{ template "get-github-latest-version" list "ynqa/jnv" }}/jnv-{{ $archLinuxGnu }}-unknown-linux-gnu.tar.xz"
+    path = "jnv-{{ $archLinuxGnu }}-unknown-linux-gnu/jnv"
     executable = true
     refreshPeriod = "168h"
 
-{{ $zoxideArch := .chezmoi.arch }}
-{{ if eq $zoxideArch "arm64" }}{{ $zoxideArch = "aarch64" }}{{ end }}
-{{ if eq $zoxideArch "amd64" }}{{ $zoxideArch = "x86_64" }}{{ end }}
-
 [".local/bin/zoxide"]
     type = "archive-file"
-    url = "https://github.com/ajeetdsouza/zoxide/releases/download/v{{ template "get-github-latest-version" list "ajeetdsouza/zoxide" }}/zoxide-{{ template "get-github-latest-version" list "ajeetdsouza/zoxide" }}-{{ $zoxideArch }}-unknown-linux-musl.tar.gz"
+    url = "https://github.com/ajeetdsouza/zoxide/releases/download/v{{ template "get-github-latest-version" list "ajeetdsouza/zoxide" }}/zoxide-{{ template "get-github-latest-version" list "ajeetdsouza/zoxide" }}-{{ $archLinuxGnu }}-unknown-linux-musl.tar.gz"
     path = "zoxide"
     executable = true
     refreshPeriod = "168h"
 
-{{ $deltaArch := .chezmoi.arch }}
-{{ if eq $deltaArch "arm64" }}{{ $deltaArch = "aarch64" }}{{ end }}
-{{ if eq $deltaArch "amd64" }}{{ $deltaArch = "x86_64" }}{{ end }}
-
 [".local/bin/delta"]
     type = "archive-file"
-    url = "https://github.com/dandavison/delta/releases/download/{{ template "get-github-latest-version" list "dandavison/delta" }}/delta-{{ template "get-github-latest-version" list "dandavison/delta" }}-{{ $deltaArch }}-unknown-linux-gnu.tar.gz"
-    path = "delta-{{ template "get-github-latest-version" list "dandavison/delta" }}-{{ $deltaArch }}-unknown-linux-gnu/delta"
+    url = "https://github.com/dandavison/delta/releases/download/{{ template "get-github-latest-version" list "dandavison/delta" }}/delta-{{ template "get-github-latest-version" list "dandavison/delta" }}-{{ $archLinuxGnu }}-unknown-linux-gnu.tar.gz"
+    path = "delta-{{ template "get-github-latest-version" list "dandavison/delta" }}-{{ $archLinuxGnu }}-unknown-linux-gnu/delta"
     executable = true
     refreshPeriod = "168h"
 
-# ghq
-{{ $ghqOS := .chezmoi.os }}
-{{ if eq $ghqOS "darwin" }}{{ $ghqOS = "darwin" }}{{ end }}
-{{ if eq $ghqOS "linux" }}{{ $ghqOS = "linux" }}{{ end }}
-
-{{ $ghqArch := .chezmoi.arch }}
-{{ if eq $ghqArch "amd64" }}{{ $ghqArch = "amd64" }}{{ end }}
-{{ if eq $ghqArch "arm64" }}{{ $ghqArch = "arm64" }}{{ end }}
-
 [".local/bin/ghq"]
     type = "archive-file"
-    url = "https://github.com/x-motemen/ghq/releases/download/v{{ template "get-github-latest-version" list "x-motemen/ghq" }}/ghq_{{ $ghqOS }}_{{ $ghqArch }}.zip"
-    path = "ghq_{{ $ghqOS }}_{{ $ghqArch }}/ghq"
+    url = "https://github.com/x-motemen/ghq/releases/download/v{{ template "get-github-latest-version" list "x-motemen/ghq" }}/ghq_{{ $osNative }}_{{ $archNative }}.zip"
+    path = "ghq_{{ $osNative }}_{{ $archNative }}/ghq"
     executable = true
     refreshPeriod = "168h"
 
 [".local/completions/_ghq"]
     type = "archive-file"
-    url = "https://github.com/x-motemen/ghq/releases/download/v{{ template "get-github-latest-version" list "x-motemen/ghq" }}/ghq_{{ $ghqOS }}_{{ $ghqArch }}.zip"
-    path = "ghq_{{ $ghqOS }}_{{ $ghqArch }}/misc/zsh/_ghq"
+    url = "https://github.com/x-motemen/ghq/releases/download/v{{ template "get-github-latest-version" list "x-motemen/ghq" }}/ghq_{{ $osNative }}_{{ $archNative }}.zip"
+    path = "ghq_{{ $osNative }}_{{ $archNative }}/misc/zsh/_ghq"
     executable = true
     refreshPeriod = "168h"
-
-# krew
-{{ $krewOS := .chezmoi.os }}
-{{ $krewArch := .chezmoi.arch }}
-{{ if eq $krewArch "amd64" }}{{ $krewArch = "amd64" }}{{ end }}
-{{ if eq $krewArch "arm64" }}{{ $krewArch = "arm64" }}{{ end }}
-{{ if and (eq $krewOS "linux") (eq $krewArch "arm") }}{{ $krewArch = "arm" }}{{ end }} # For krew-linux_arm.tar.gz (they have this odd one)
 
 [".local/bin/kubectl-krew"]
     type = "archive-file"
-    url = "https://github.com/kubernetes-sigs/krew/releases/download/v{{ template "get-github-latest-version" list "kubernetes-sigs/krew" }}/krew-{{ $krewOS }}_{{ $krewArch }}.tar.gz"
-    path = "./krew-{{ $krewOS }}_{{ $krewArch }}"
+    url = "https://github.com/kubernetes-sigs/krew/releases/download/v{{ template "get-github-latest-version" list "kubernetes-sigs/krew" }}/krew-{{ $osNative }}_{{ $archNative }}.tar.gz"
+    path = "./krew-{{ $osNative }}_{{ $archNative }}"
     executable = true
     refreshPeriod = "168h"
 
-# fzf
 [".local/bin/fzf"]
     type = "archive-file"
-    url = "https://github.com/junegunn/fzf/releases/download/v{{ template "get-github-latest-version" list "junegunn/fzf" }}/fzf-{{ template "get-github-latest-version" list "junegunn/fzf" }}-{{ .chezmoi.os }}_{{ .chezmoi.arch }}.tar.gz"
+    url = "https://github.com/junegunn/fzf/releases/download/v{{ template "get-github-latest-version" list "junegunn/fzf" }}/fzf-{{ template "get-github-latest-version" list "junegunn/fzf" }}-{{ $osNative }}_{{ $archNative }}.tar.gz"
     executable = true
     path = "fzf"
     refreshPeriod = "168h"
 
 [".local/bin/jq"]
     type = "file"
-    url = "https://github.com/jqlang/jq/releases/download/{{ template "get-github-latest-version" list "jqlang/jq" }}/jq-linux-{{ .chezmoi.arch }}"
+    url = "https://github.com/jqlang/jq/releases/download/{{ template "get-github-latest-version" list "jqlang/jq" }}/jq-linux-{{ $archNative }}"
     executable = true
     refreshPeriod = "168h"
 
 [".local/bin/argocd"]
     type = "file"
-    url = "https://github.com/argoproj/argo-cd/releases/download/v{{ template "get-github-latest-version" list "argoproj/argo-cd" }}/argocd-linux-{{ .chezmoi.arch }}"
+    url = "https://github.com/argoproj/argo-cd/releases/download/v{{ template "get-github-latest-version" list "argoproj/argo-cd" }}/argocd-linux-{{ $archNative }}"
     executable = true
     refreshPeriod = "168h"
 
 [".local/bin/helm"]
     type = "archive-file"
-    url = "https://get.helm.sh/helm-v{{ template "get-github-latest-version" list "helm/helm" }}-linux-{{ .chezmoi.arch }}.tar.gz"
-    path = "linux-{{ .chezmoi.arch }}/helm"
+    url = "https://get.helm.sh/helm-v{{ template "get-github-latest-version" list "helm/helm" }}-linux-{{ $archNative }}.tar.gz"
+    path = "linux-{{ $archNative }}/helm"
     executable = true
     refreshPeriod = "168h"
 
 [".local/bin/gron"]
     type = "archive-file"
-    url = "https://github.com/tomnomnom/gron/releases/download/v{{ template "get-github-latest-version" list "tomnomnom/gron" }}/gron-linux-{{ .chezmoi.arch }}-{{ template "get-github-latest-version" list "tomnomnom/gron" }}.tgz"
+    url = "https://github.com/tomnomnom/gron/releases/download/v{{ template "get-github-latest-version" list "tomnomnom/gron" }}/gron-linux-{{ $archNative }}-{{ template "get-github-latest-version" list "tomnomnom/gron" }}.tgz"
     path = "gron"
     executable = true
     refreshPeriod = "168h"
 
 [".local/bin/kubectl"]
     type = "file"
-    url = "https://dl.k8s.io/release/v{{ template "get-github-latest-version" list "kubernetes/kubernetes" }}/bin/linux/{{ .chezmoi.arch }}/kubectl"
+    url = "https://dl.k8s.io/release/v{{ template "get-github-latest-version" list "kubernetes/kubernetes" }}/bin/linux/{{ $archNative }}/kubectl"
     executable = true
     refreshPeriod = "168h"
 
 [".local/bin/terraform"]
     type = "archive-file"
-    url = "https://releases.hashicorp.com/terraform/{{ template "get-github-latest-version" list "hashicorp/terraform" }}/terraform_{{ template "get-github-latest-version" list "hashicorp/terraform" }}_linux_{{ .chezmoi.arch }}.zip"
+    url = "https://releases.hashicorp.com/terraform/{{ template "get-github-latest-version" list "hashicorp/terraform" }}/terraform_{{ template "get-github-latest-version" list "hashicorp/terraform" }}_linux_{{ $archNative }}.zip"
     path = "terraform"
     executable = true
     refreshPeriod = "168h"
@@ -189,7 +178,21 @@
 
 [".local/bin/node"]
     type = "archive-file"
-    url  = "https://nodejs.org/dist/{{ template "get-node-latest-lts-version" . }}/node-{{ template "get-node-latest-lts-version" . }}-{{ .chezmoi.os }}-{{ if eq .chezmoi.arch "amd64" }}x64{{ else }}{{ .chezmoi.arch }}{{ end }}.tar.xz"
-    path = "node-{{ template "get-node-latest-lts-version" . }}-{{ .chezmoi.os }}-{{ if eq .chezmoi.arch "amd64" }}x64{{ else }}{{ .chezmoi.arch }}{{ end }}/bin/node"
+    url  = "https://nodejs.org/dist/{{ template "get-node-latest-lts-version" . }}/node-{{ template "get-node-latest-lts-version" . }}-{{ $osNative }}-{{ $archX64 }}.tar.xz"
+    path = "node-{{ template "get-node-latest-lts-version" . }}-{{ $osNative }}-{{ $archX64 }}/bin/node"
     executable    = true
+    refreshPeriod = "168h"
+
+[".local/bin/op"]
+    type = "archive-file"
+    url = "https://cache.agilebits.com/dist/1P/op2/pkg/v{{ template "get-1password-latest-version" . }}/op_linux_{{ $archNative }}_v{{ template "get-1password-latest-version" . }}.zip"
+    path = "op"
+    executable = true
+    refreshPeriod = "168h"
+
+[".local/bin/gh"]
+    type = "archive-file"
+    url = "https://github.com/cli/cli/releases/download/v{{ template "get-github-latest-version" list "cli/cli" }}/gh_{{ template "get-github-latest-version" list "cli/cli" }}_{{ if eq .chezmoi.os "darwin" }}macOS_{{ else }}linux_{{ end }}{{ $archNative }}{{ if eq .chezmoi.os "darwin" }}.zip{{ else }}.tar.gz{{ end }}"
+    path = "gh_{{ template "get-github-latest-version" list "cli/cli" }}_{{ if eq .chezmoi.os "darwin" }}macOS_{{ else }}linux_{{ end }}{{ $archNative }}/bin/gh"
+    executable = true
     refreshPeriod = "168h"

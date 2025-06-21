@@ -16,7 +16,6 @@ development_tools:
 
   # --- SCM & CLI ----------------------------------------------------------
   - name: git
-  - name: gh
   - name: curl
   - name: unzip
   - name: gnupg
@@ -33,6 +32,7 @@ development_tools:
   # --- virtualization helpers --------------------------------------------
   - name: libvirt-clients
     RedHat: libvirt-client
+    Archlinux: libvirt
 
   # --- locale support -----------------------------------------------------
   - name: locales                     # Generic

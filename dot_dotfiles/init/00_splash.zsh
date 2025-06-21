@@ -6,8 +6,8 @@ LUGIA_ART=(
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢯⡉⠛⠲⠿⣿⣿⣿⣿⣿⣿⣿⡀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⣄⠀⠀⠀⠙⠻⣿⣿⣿⣿⣷⡼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣽⣦⡀⠀⢰⡆⠈⠙⢿⢿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣦⣤⣭⣬⣥⣀⣾⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"⠀
-"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⢠⣿⣿⣿⣿⣿⣆⢮⣫⣦⠈⠉⠛⠁⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"⠀
+"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣦⣤⣭⣬⣥⣀⣾⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
+"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⢠⣿⣿⣿⣿⣿⣆⢮⣫⣦⠈⠉⠛⠁⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣷⣄⠀⠀⢸⣿⣿⣿⣿⣯⠛⢮⣻⡽⠀⠀⣠⣾⣿⠀⠀⠀⠀⠀⠀⢠⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⣿⣿⣿⣦⢸⣿⣿⣿⣿⣿⠀⠀⣨⣭⣥⣾⡿⠟⠉⠀⠀⠀⠀⠀⠀⢸⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣄⡈⠙⠿⡿⢸⣿⣿⣿⣿⣿⣇⣤⣈⠛⠛⠉⢀⣤⣾⣿⠀⠀⠀⠀⠀⠘⣿⣿⢆⡇⣀⣠⣤⡄⠀⠀⠀"
@@ -48,9 +48,9 @@ FLAVOR_LINE="${LUGIA_FLAVOR_LINES[RANDOM % ${#LUGIA_FLAVOR_LINES[@]}]}"
 TRAINER_INFO=(
   "=== TRAINER ==="
   " ↳ Name:        $(whoami)"
-  " ↳ Location:    $(hostname -f)"
+  " ↳ Location:    $(hostname -f 2>/dev/null || cat /etc/hostname)"
   " ↳ Weather:     $(curl -s 'wttr.in/aus+tx?format=%C%20%t')"
-  " ↳ Playtime:    $(uptime -p | sed 's/^up //')"
+  " ↳ Playtime:    $(uptime -p | sed 's/^up //' || cat /proc/uptime | awk '{print $1}' | xargs -I{} awk -v var={} 'BEGIN {printf "%d weeks, %d days, %d hours, %d minutes\n", var/604800, (var%604800)/86400, (var%86400)/3600, (var%3600)/60}')"
   " ↳ White-out:   $(awk '{print int($1/86400)}' /proc/uptime)d since party fainted"
 
   "=== CAMP GEAR ==="
