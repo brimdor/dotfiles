@@ -102,10 +102,34 @@ install_ansible() {
     check_ansible_version
 }
 
+# Function to install build dependencies for Python (Debian/Ubuntu)
+install_build_deps() {
+    echo "[chezmoi] Installing build dependencies for Python..."
+    export DEBIAN_FRONTEND=noninteractive
+    sudo apt-get update -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold
+    sudo apt-get install -y --no-install-recommends \
+        build-essential \
+        zlib1g-dev \
+        libssl-dev \
+        libbz2-dev \
+        libreadline-dev \
+        libsqlite3-dev \
+        libffi-dev \
+        libncursesw5-dev \
+        libgdbm-dev \
+        liblzma-dev \
+        tk-dev \
+        uuid-dev \
+        curl \
+        wget
+    echo "[chezmoi] Build dependencies installed."
+}
+
 echo "[chezmoi] Prewarming sudo..."
 sudo true
 echo "[chezmoi] Starting Ansible install process with detailed troubleshooting..."
 check_ansible_installed
+install_build_deps
 echo "[chezmoi] Checking/installing Python..."
 install_python
 echo "[chezmoi] Checking/installing pip..."
