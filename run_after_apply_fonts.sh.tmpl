@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+# Only run if fonts were updated
+if ! ls ~/.local/share/fonts/*.{ttf,otf,ttc,otc} >/dev/null 2>&1; then
+  exit 0
+fi
+
+{{ if eq .chezmoi.os "linux" }}
+echo "[chezmoi] Updating font cache (fc-cache -fv)..."
+fc-cache -fv
+{{ end }}
+
+{{ if eq .chezmoi.os "darwin" }}
+echo "[chezmoi] Copying fonts to ~/Library/Fonts..."
+mkdir -p ~/Library/Fonts
+cp -f ~/.local/share/fonts/*.{ttf,otf,ttc,otc} ~/Library/Fonts/ 2>/dev/null || true
+{{ end }}

@@ -1,0 +1,7 @@
+## ~/.dotfiles/exports/genericExports.zsh
+
+#OpenAI
+export OPENAI_KEY=$(creds "{{ .opIds.openAi.uuid }}" "{{ .opIds.openAi.key }}")
+
+#Network Devices
+export NAS_ADDRESS=$(creds "{{ .opIds.nas.uuid }}" "{{ .opIds.nas.key}}")

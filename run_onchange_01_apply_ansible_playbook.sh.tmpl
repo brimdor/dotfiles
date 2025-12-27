@@ -3,6 +3,8 @@
 # chezmoi:chmod=755
 set -Eeuo pipefail
 
+# SHA256 of packaged-software: {{ include ".chezmoitemplates/packaged-software" | sha256sum }}
+
 log() { printf '[chezmoi] %s\n' "$*"; }
 
 ##############################################################################

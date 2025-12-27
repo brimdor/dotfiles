@@ -1,20 +1,26 @@
 # Source necessary bins
-export PATH="$PATH:/home/red/.local/bin"
+export PATH="$PATH:$HOME/.local/bin"
+
+# --- Auto tmux session management ---
+if command -v tmux >/dev/null 2>&1; then
+  # Only run if not already inside tmux
+  if [[ -z "$TMUX" ]]; then
+    # If there are any sessions, attach to the last active and prevent running the rest of .zshrc
+    if tmux has-session 2>/dev/null; then
+        tmux attach && exit
+    else
+        tmux new-session -s main
+    fi
+  fi
+fi
 
 # Load the splash screen
 source "$HOME/.dotfiles/init/00_splash.zsh"
 
 # ------------------------------------------------------------
-# Initialize the 1Password session manager
-# Source the op_session_manager function
-if [ -f "$HOME/.dotfiles/init/opSessionManager.zsh" ]; then
-    source "$HOME/.dotfiles/init/opSessionManager.zsh"
-fi
-
-# ------------------------------------------------------------
-# Source the creds function (important for other functions)
-if [ -f "$HOME/.dotfiles/functions/creds.zsh" ]; then
-    source "$HOME/.dotfiles/functions/creds.zsh"
+# Source combined 1Password functions early
+if [ -f "$HOME/.dotfiles/functions/opAll.zsh" ]; then
+    source "$HOME/.dotfiles/functions/opAll.zsh"
 fi
 
 # ------------------------------------------------------------
@@ -28,11 +34,15 @@ done
 for file in $HOME/.dotfiles/exports/*.zsh; do
     [ -r "$file" ] && source "$file"
 done
+# Source GitHub CLI login (ensures gh is logged in every session)
+if [ -r "$HOME/.dotfiles/exports/github.zsh.tmpl" ]; then
+    source "$HOME/.dotfiles/exports/github.zsh.tmpl"
+fi
 
 # ------------------------------------------------------------
-# Source all other function files, except creds.zsh
+# Source all other function files, except opAll.zsh
 for file in $HOME/.dotfiles/functions/*.zsh; do
-    [[ "$file" != *"creds.zsh" ]] && [ -r "$file" ] && source "$file"
+    [[ "$file" != *"opAll.zsh" ]] && [ -r "$file" ] && source "$file"
 done
 
 # ------------------------------------------------------------
@@ -161,7 +171,7 @@ export LC_CTYPE=en_US.UTF-8
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-export PATH="$PATH:/home/red/.local/bin"
+export PATH="$PATH:$HOME/.local/bin"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -170,13 +180,13 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 export PATH=$PATH:/usr/local/bin
-export PATH=$PATH:/home/red/.local/share/gem/ruby/3.0.0/bin
+export PATH=$PATH:$HOME/.local/share/gem/ruby/3.0.0/bin
 export EDITOR=nvim
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 # Created by `pipx` on 2024-02-29 10:44:28
-export PATH="$PATH:/home/red/.local/bin"
+export PATH="$PATH:$HOME/.local/bin"
 
 opFind() {
   search=$1
@@ -193,3 +203,4 @@ fi
 for file in $HOME/.dotfiles/autocompletion/*.zsh; do
     [ -r "$file" ] && source "$file"
 done
+

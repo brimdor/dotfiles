@@ -1,0 +1,117 @@
+# ~/.dotfiles/functions/opAll.zsh.tmpl
+# ----------------------------------------------------------
+# Combined 1Password session manager, login, helper, and creds functions
+
+# Ensure ~/.config/op permissions are correct
+if [ -d "$HOME/.config/op" ]; then
+  perms=$(stat -c "%a" "$HOME/.config/op")
+  other_perms=$(stat -c "%a" "$HOME/.config/op/config")
+  if [ "$perms" != "700" ] || [ "$other_perms" != "600" ]; then
+    #echo "🔒 Fixing permissions on ~/.config/op (was $perms, setting .config/op to 700 then .config/op/config to 600)"
+    chmod 700 "$HOME/.config/op"
+    chmod 600 "$HOME/.config/op/config"
+  fi
+fi
+
+{{- if (env "OP_CONNECT_HOST") }}
+
+export OP_CONNECT_VAULT="${OP_CONNECT_VAULT:-homelab}"
+
+# ----------------------------------------------------------
+# CONNECT / service-account mode → no interactive sign-in needed.
+
+op_session_manager() { :; }
+opLogin() { :; }
+
+opDoc() {
+  local item_uid="$1" filename="$2" out="$3"
+  if [[ -z $item_uid || -z $filename || -z $out ]]; then
+    echo "Usage: opDoc <item-uid> <filename> <out-path>"
+    return 1
+  fi
+  op read -o "$out" "op://${OP_CONNECT_VAULT}/${item_uid}/${filename}"
+}
+
+opUrl() {
+  local item_uid="$1" index="${2:-0}"
+  [[ -z $item_uid ]] && { echo "Usage: opUrl <item-uid> [index]"; return 1; }
+  op item get "$item_uid" --vault "${OP_CONNECT_VAULT}" --format json \
+    | jq -r ".urls[${index}].href"
+}
+
+creds() {
+  if [ -z "$2" ]; then
+    echo "Usage: creds <item/uid> <field>"; return 1
+  fi
+  op read "op://${OP_CONNECT_VAULT}/${1}/${2}"
+}
+
+{{- else }}
+# ----------------------------------------------------------
+# CLASSIC interactive account mode
+
+op_session_manager() {
+  local session_dir="$HOME/.op_sessions"
+  mkdir -p "$session_dir"
+  chmod 700 "$session_dir"
+
+  get_account_alias() { op account list --format json | jq -r '.[0].user_uuid'; }
+
+  signin_op() {
+    local account_alias="$1" session_file="$2" session_token
+    if [[ -f $session_file ]]; then
+      session_token=$(<"$session_file")
+      export OP_SESSION_"$account_alias"="$session_token"
+      if op account get >/dev/null 2>&1; then
+        echo "✅ 1Password session for $account_alias is active."
+        return 0
+      else
+        echo "⚠️  Session for $account_alias is invalid. Re-authenticating…"
+        rm -f "$session_file"
+      fi
+    fi
+    echo "🔑 Signing in to 1Password account $account_alias…"
+    session_token=$(op signin --account "$account_alias" --raw) || {
+      echo "❌ 1Password sign-in failed."; return 1; }
+    echo "$session_token" >"$session_file"; chmod 600 "$session_file"
+    export OP_SESSION_"$account_alias"="$session_token"
+    echo "✅ Signed in to $account_alias successfully."
+  }
+
+  local account_alias; account_alias=$(get_account_alias) || return 1
+  local session_file="$session_dir/session_$account_alias"
+  signin_op "$account_alias" "$session_file"
+}
+
+if [[ -z "$OP_SERVICE_ACCOUNT_TOKEN" ]]; then
+  # Initialize on load
+  op_session_manager
+fi
+opLogin() {
+  local acct=$(op account list --format=json | jq -r '.[0].shorthand')
+  eval "$(op signin --account \"$acct\")"
+}
+
+opDoc() {
+  local item_uid="$1" filename="$2" out="$3"
+  if [[ -z $item_uid || -z $filename || -z $out ]]; then
+    echo "Usage: opDoc <item-uid> <filename> <out-path>"
+    return 1
+  fi
+  op document get "$item_uid" --out-file "$out"
+}
+
+opUrl() {
+  local item_uid="$1" index="${2:-0}"
+  [[ -z $item_uid ]] && { echo "Usage: opUrl <item-uid> [index]"; return 1; }
+  op item get --vault $OP_CONNECT_VAULT "$item_uid" --format json \
+    | jq -r ".urls[${index}].href"
+}
+
+creds() {
+  if [ -z "$2" ]; then
+    echo "Usage: creds <item/uid> <field>"; return 1
+  fi
+  op item get --vault $OP_CONNECT_VAULT "$1" --fields "$2" --reveal
+}
+{{- end }}

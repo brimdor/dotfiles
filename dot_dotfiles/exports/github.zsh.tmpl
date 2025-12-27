@@ -1,0 +1,76 @@
+# ~/.dotfiles/exports/github.zsh.tmpl
+if command -v gh >/dev/null 2>&1 && [[ -n "$GH_TOKEN" ]]; then
+  # "Dark path" check
+  if [[ -f "$HOME/.ssh/dark_path" ]]; then
+    return
+  fi
+
+  if ! gh auth status >/dev/null 2>&1; then
+    echo "$GH_TOKEN" | gh auth login --with-token
+    gh config set git_protocol ssh
+  fi
+
+  if gh auth status >/dev/null 2>&1; then
+    # Use gh api user/keys to get the registered key strings (type and key data)
+    github_keys=$(gh api user/keys --jq '.[].key')
+    local_pub_keys=()
+    registered_key=""
+
+    if [[ ! -d "$HOME/.ssh" ]] || [[ -z "$(ls -A "$HOME/.ssh")" ]]; then
+      echo "❌ No SSH public keys found in ~/.ssh."
+      read "genkey?Would you like to generate a new SSH keypair and register it with Github? (y/n): "
+      if [[ "$genkey" =~ ^[Yy]$ ]]; then
+        keyfile="$HOME/.ssh/id_ed25519"
+        ssh-keygen -t ed25519 -N "" -f "$keyfile" -C "$USER@$(hostname)"
+        gh ssh-key add "${keyfile}.pub" --title "$(hostname)-id_ed25519"
+        echo "✅ Public Key '${keyfile}.pub' has been successfully registered with Github."
+        return
+      else
+        echo "❌ You have chosen a dark path young padawan... May the force be with you."
+        touch "$HOME/.ssh/dark_path"
+        return
+      fi
+    else
+      for keyfile in "$HOME"/.ssh/*; do
+        [[ -f "$keyfile" ]] || continue
+        if head -n1 "$keyfile" | grep -qE '^ssh-(rsa|ed25519|ecdsa|dss) '; then
+          local_pub_keys+=("$keyfile")
+        fi
+      done
+    fi
+
+    # Check if any local public key is already registered
+    for pubkey in "${local_pub_keys[@]}"; do
+      # echo "*****************"
+      # echo "Checking local key: $pubkey"
+      local_key_content=$(awk '/^ssh-(rsa|ed25519|ecdsa|dss) / {print $1 " " $2; exit}' "$pubkey")
+      # echo "Checking local key content: $local_key_content"
+      # echo "Checking Registered Github Key: $github_keys"
+      # echo "*****************"
+      if [[ -n "$local_key_content" ]] && grep -Fxq "$local_key_content" <<< "$github_keys"; then
+        echo "✅ Public Key '$(basename "$pubkey")' is already registered with Github."
+        return
+      fi
+    done
+
+    if (( ${#local_pub_keys[@]} == 1 )); then
+      key_to_add="${local_pub_keys[1]}"
+      gh ssh-key add "$key_to_add" --title "$(hostname)-$(basename "$key_to_add")"
+      echo "✅ Public Key '$(basename "$key_to_add")' has been successfully registered with Github."
+      return
+    fi
+
+    # Multiple keys, prompt user
+    echo "Multiple SSH public keys found. Select one to register with Github:"
+    COLUMNS=1
+    PS3=$'\nEnter the number of the key to register: '
+    select key_to_add in "${local_pub_keys[@]}"; do
+      [[ -n "$key_to_add" ]] && break
+    done
+    unset COLUMNS
+    if [[ -n "$key_to_add" ]]; then
+      gh ssh-key add "$key_to_add" --title "$(hostname)-$(basename "$key_to_add")"
+      echo "✅ Public Key '$(basename "$key_to_add")' has been successfully registered with Github."
+    fi
+  fi
+fi

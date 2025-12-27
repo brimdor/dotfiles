@@ -1,0 +1,18 @@
+# ~/.dotfiles/functions/argoLogin.zsh
+
+# ArgoCD login function
+# Usage: argoLogin
+# Dependencies: argocd, creds
+# Output: Login to ArgoCD server
+argoLogin() {
+  if [[ -z $(command -v argocd) ]]; then
+    echo "argocd not found"
+    return 1
+  fi
+  local opi={{ .opIds.argocd.uuid }}
+  export ARGOCD_USERNAME=$(creds $opi '{{ .opIds.argocd.key1 }}')
+  export ARGOCD_PASSWORD=$(creds $opi '{{ .opIds.argocd.key2 }}')
+  local ARGOCD_SERVER_FL=$(creds $opi '{{ .opIds.argocd.key3 }}')
+  export ARGOCD_SERVER=$(echo "$ARGOCD_SERVER_FL" | sed -E 's#^(https?://)?([^./]+)\.([^./]+)\.([a-z]+).*#\2.\3.\4#')
+  argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD --grpc-web
+}

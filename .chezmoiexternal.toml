@@ -15,14 +15,11 @@
 {{ $osName := .chezmoi.os }}
 {{ if eq $osName "darwin" }}{{ $osName = "macos" }}{{ end }}
 {{ $archNeovim := .chezmoi.arch }}
-{{ if eq $osName "linux" }}
-    {{ if eq $archNeovim "arm64" }}{{ $archNeovim = "aarch64" }}{{ end }}
-    {{ if eq $archNeovim "amd64" }}{{ $archNeovim = "x86_64" }}{{ end }}
-{{ end }}
+{{ if eq $archNeovim "amd64" }}{{ $archNeovim = "x86_64" }}{{ end }}
 
 [".local/opt/nvim"]
     type            = "archive"
-    url             = "https://github.com/neovim/neovim/releases/download/v{{ template "get-github-latest-version" list "neovim/neovim" }}/nvim-linux-{{ $archNeovim }}.tar.gz"
+    url             = "https://github.com/neovim/neovim/releases/download/v{{ template "get-github-latest-version" list "neovim/neovim" }}/nvim-{{ $osName }}-{{ $archNeovim }}.tar.gz"
     stripComponents = 1
     refreshPeriod   = "168h"
 
@@ -164,7 +161,7 @@
 
 [".config/nvim/lua/custom/plugins/lualine.lua"]
     type = "file"
-    url = "https://raw.githubusercontent.com/xero/dotfiles/refs/heads/main/neovim/.config/nvim/lua/plugins/lualine.lua"
+    url = "https://raw.githubusercontent.com/xero/dotfiles/refs/heads/main/neovim/.config/nvim/lua/ui/lualine.lua"
     exact = true
     stripComponents = 1
     refreshPeriod = "168h"
@@ -195,4 +192,36 @@
     url = "https://github.com/cli/cli/releases/download/v{{ template "get-github-latest-version" list "cli/cli" }}/gh_{{ template "get-github-latest-version" list "cli/cli" }}_{{ if eq .chezmoi.os "darwin" }}macOS_{{ else }}linux_{{ end }}{{ $archNative }}{{ if eq .chezmoi.os "darwin" }}.zip{{ else }}.tar.gz{{ end }}"
     path = "gh_{{ template "get-github-latest-version" list "cli/cli" }}_{{ if eq .chezmoi.os "darwin" }}macOS_{{ else }}linux_{{ end }}{{ $archNative }}/bin/gh"
     executable = true
+    refreshPeriod = "168h"
+
+[".local/bin/neowofetch"]
+    type          = "file"
+    url           = "https://nf.hydev.org"
+    executable    = true
+    refreshPeriod = "168h"
+    
+[".local/bin/onefetch"]
+    type = "archive-file"
+    url = "https://github.com/o2sh/onefetch/releases/download/{{ template "get-github-latest-version" list "o2sh/onefetch" }}/onefetch-{{ if eq .chezmoi.os "darwin" }}mac{{ else }}linux{{ end }}.tar.gz"
+    path = "onefetch"
+    executable    = true
+    stripComponents = 1
+    refreshPeriod = "168h"
+
+[".local/share/fonts/FiraCodeNerdFont-Regular.ttf"]
+    type = "archive-file"
+    url = "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/FiraCode.zip"
+    path = "FiraCodeNerdFont-Regular.ttf"
+    refreshPeriod = "168h"
+
+[".local/share/fonts/FiraCodeNerdFontMono-Regular.ttf"]
+    type = "archive-file"
+    url = "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/FiraCode.zip"
+    path = "FiraCodeNerdFontMono-Regular.ttf"
+    refreshPeriod = "168h"
+
+[".local/share/fonts/MesloLGSNerdFont-Regular.ttf"]
+    type = "archive-file"
+    url = "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/Meslo.zip"
+    path = "MesloLGSNerdFont-Regular.ttf"
     refreshPeriod = "168h"

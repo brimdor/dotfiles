@@ -1,0 +1,29 @@
+opIds:
+  # openAi: Retrieve OpenAI API key (used in genericExports.zsh to export OPENAI_KEY)
+  openAi:
+    uuid: "xlqo7wxjjeveea5eq6whcyltmm"
+    key: "password"
+  # plex: Retrieve Plex API key for plex_streams function to check current streams
+  plex:
+    uuid: "xqz3rnyhd5am2xtjc7eyxsl2mu"
+    key: "apiKey"
+  # kube: Retrieve Kubernetes kubeconfig file (used in exports/kubeContext.zsh to populate KUBECONFIG)
+  kube:
+    uuid: "wxnv57hiug2rizkowvdncxhiju"
+    key: "kubeconfig.yaml"
+  # nas: Retrieve NAS address (used in genericExports.zsh to export NAS_ADDRESS)
+  nas:
+    uuid: "c7uboigaglivvovhl2m43ubumu"
+    key: "site"
+  # argocd: Retrieve ArgoCD credentials (username/password) for argoLogin function
+  argocd:
+    uuid: "6labnu5l2u4i5ow3yb2yov3mmm"
+    key1: "username"
+    key2: "password"
+    key3: "website"
+  # gitea: Retrieve Gitea credentials (user_name/password) for newGiteaRepo function
+  gitea:
+    uuid: "37xepw2c3xd6wsws4n6yvpwvcq"
+    key1: "username"
+    key2: "password"
+    key3: "website"

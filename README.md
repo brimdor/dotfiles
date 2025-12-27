@@ -13,4 +13,4 @@ GITHUB_USERNAME=llajas
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply $GITHUB_USERNAME
 ```
 
-Some quality of life improvements are included, such as oh-my-zsh, tmux, and vim plugins. 
+Some quality of life improvements are included, such as oh-my-zsh, tmux, and vim plugins.
