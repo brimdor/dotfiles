@@ -138,4 +138,4 @@ nas-mode() {
 }
 
 # Quick status check alias
-alias nas-status='kubectl get nasdependency nas-workloads -n nas-dependency-operator && echo "" && echo "Managed Nodes:" && kubectl get nodes -l homelab.llajas.io/hypervisor=unraid -o wide'
+alias nas-status='kubectl get nasdependency nas-workloads -n nas-dependency-operator && echo "" && echo "Managed Nodes:" && kubectl get nodes -l homelab.eaglepass.io/hypervisor=unraid -o wide'

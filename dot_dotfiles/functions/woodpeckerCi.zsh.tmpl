@@ -7,10 +7,10 @@
 #
 # Usage:
 #   wp-enable-repo exampleRepo
-#   wp-enable-repo llajas/exampleRepo
+#   wp-enable-repo brimdor/exampleRepo
 #   wp-enable-repo -u https://ci.your.domain -t "$TOKEN" exampleRepo
 #   wp-enable-repo -n "exampleRepo"          # explicit name match
-#   wp-enable-repo -f "llajas/exampleRepo"   # explicit full_name match
+#   wp-enable-repo -f "brimdor/exampleRepo"   # explicit full_name match
 #
 # Notes:
 # - Refuses if multiple repos match and you didn't provide full_name.
@@ -261,4 +261,3 @@ EOF
 
   echo "Activated: ${full_name} (forge_remote_id=${forge_remote_id})"
 }
-

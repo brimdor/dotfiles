@@ -139,7 +139,7 @@
   refreshPeriod: "168h"
 ".config/nvim":
   type: "archive"
-  url: "https://github.com/llajas/kickstart.nvim/archive/master.tar.gz"
+  url: "https://github.com/nvim-lua/kickstart.nvim/archive/master.tar.gz"
   exact: true
   stripComponents: 1
   refreshPeriod: "168h"
