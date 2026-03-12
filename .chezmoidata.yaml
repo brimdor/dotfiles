@@ -1,41 +1,19 @@
 opIds:
-  # openAi: Retrieve OpenAI API key (used in genericExports.zsh to export OPENAI_KEY)
-  openAi:
-    uuid: "l4hhffh3lqf7twibxlw2wand3i"
-    key: "apiKey"
-  # plex: Retrieve Plex API key for plex_streams function to check current streams
-  plex:
-    uuid: "mbvi72of2jyoxcg6pll662dpwe"
-    key: "apiKey"
   # kube: Retrieve Kubernetes kubeconfig file (used in exports/kubeContext.zsh to populate KUBECONFIG)
   kube:
-    uuid: "3pmmbxpwty7zvxinnvlsujww44"
+    uuid: "wxnv57hiug2rizkowvdncxhiju"
     key: "kubeconfig.yaml"
-  # qemu: Retrieve QEMU/libvirt connection URI (used in exports/libvirt.zsh to set LIBVIRT_DEFAULT_URI)
-  qemu:
-    uuid: "oq6ovvomo4wrjgsl4qmdql3bhm"
-    key: "url"
-  # nas: Retrieve NAS address (used in genericExports.zsh to export NAS_ADDRESS)
-  nas:
-    uuid: "oq6ovvomo4wrjgsl4qmdql3bhm"
-    key1: "address"
-    key2: "docker"
   # argocd: Retrieve ArgoCD credentials (username/password) for argoLogin function
   argocd:
-    uuid: "o77nae5rh26yred43jvsaxn2ba"
+    uuid: "6labnu5l2u4i5ow3yb2yov3mmm"
     key1: "username"
     key2: "password"
   # gitea: Retrieve Gitea credentials (user_name/password) for newGiteaRepo function
   gitea:
-    uuid: "xqz3rnyhd5am2xtjc7eyxsl2mu"
+    uuid: "37xepw2c3xd6wsws4n6yvpwvcq"
     key1: "username"
     key2: "password"
   # woodpecker: Retrieve API key for Woodpecker CI (used in woodpeckerCli.zsh to export WOODPECKER_TOKEN)
   woodpecker:
-    uuid: "x3j6m6knkrivl6tt5uswcxaoxy"
-    key: "Personal Access Token"
-  grafanaMcp:
-    uuid: "eg55pmawmq5qykfvlwqsistibe"
-    key1: "KUBERNETES_MCP_URL"
-    key2: "GRAFANA_MCP_URL"
-    key3: "GRAFANA_MCP_TOKEN"
+    uuid: "22npat4mwqqwgzeexj3dcrkolm"
+    key: "token"

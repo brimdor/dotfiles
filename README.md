@@ -35,7 +35,7 @@ This dual approach ensures secrets are loaded securely and conveniently, regardl
 1. [Install chezmoi](https://www.chezmoi.io/install/):
 
 ```bash
-GITHUB_USERNAME=llajas
+GITHUB_USERNAME=brimdor
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply $GITHUB_USERNAME
 ```
 
